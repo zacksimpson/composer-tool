@@ -223,7 +223,7 @@ export default function NoteEditorScreen() {
         {/* Body */}
         <ScrollView
           contentContainerStyle={styles.bodyContent}
-          keyboardDismissMode="on-drag"
+          keyboardDismissMode="none"
           keyboardShouldPersistTaps="handled"
           overScrollMode="never"
           showsVerticalScrollIndicator={false}
