@@ -230,10 +230,10 @@ export default function NoteEditorScreen() {
           style={styles.bodyScroll}
         >
           {/*
-           * TextInput is always mounted so Android never loses the focused
-           * input and the keyboard never auto-dismisses mid-typing.
-           * In rendered mode the text/cursor are made transparent and
-           * pointerEvents="none" lets touches fall through to the overlay.
+           * TextInput stays mounted and props never change while focused,
+           * so Android never calls restartInput() and the IME stays
+           * connected — keyboard and Return key work normally.
+           * The opaque overlay covers the raw text in rendered mode.
            */}
           <View style={styles.editorContainer}>
             <TextInput
@@ -241,26 +241,23 @@ export default function NoteEditorScreen() {
               autoCapitalize="sentences"
               autoCorrect
               blurOnSubmit={false}
-              cursorColor={isRawMode ? textColor : "transparent"}
+              cursorColor={textColor}
               multiline
               onChangeText={handleBodyChange}
               paddingLeft={0}
               placeholder="Type type type"
-              placeholderTextColor={isRawMode ? textColor : "transparent"}
+              placeholderTextColor={textColor}
               ref={bodyInputRef}
               scrollEnabled={false}
-              selectionColor={isRawMode ? textColor : "transparent"}
-              style={[
-                styles.bodyInput,
-                { color: isRawMode ? textColor : "transparent" },
-              ]}
+              selectionColor={textColor}
+              style={[styles.bodyInput, { color: textColor }]}
               textAlignVertical="top"
               value={body}
             />
             {!isRawMode && (
               <HapticPressable
                 onPress={handleRenderedPress}
-                style={StyleSheet.absoluteFillObject}
+                style={[StyleSheet.absoluteFillObject, { backgroundColor: bg }]}
               >
                 {body.trim() ? (
                   <MarkdownRenderer textColor={textColor}>
