@@ -246,7 +246,6 @@ export default function NoteEditorScreen() {
               paddingLeft={0}
               placeholder="Type type type"
               placeholderTextColor={isRawMode ? textColor : "transparent"}
-              pointerEvents={isRawMode ? "auto" : "none"}
               ref={bodyInputRef}
               scrollEnabled={false}
               selectionColor={isRawMode ? textColor : "transparent"}
