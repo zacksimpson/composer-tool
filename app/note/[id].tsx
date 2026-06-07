@@ -126,7 +126,7 @@ export default function NoteEditorScreen() {
 
   const handleRenderedPress = () => {
     setIsRawMode(true);
-    setTimeout(() => bodyInputRef.current?.focus(), 50);
+    bodyInputRef.current?.focus();
   };
 
   const handleTitleBlur = () => {
@@ -229,37 +229,53 @@ export default function NoteEditorScreen() {
           showsVerticalScrollIndicator={false}
           style={styles.bodyScroll}
         >
-          {isRawMode ? (
+          {/*
+           * TextInput is always mounted so Android never loses the focused
+           * input and the keyboard never auto-dismisses mid-typing.
+           * In rendered mode the text/cursor are made transparent and
+           * pointerEvents="none" lets touches fall through to the overlay.
+           */}
+          <View style={styles.editorContainer}>
             <TextInput
               allowFontScaling={false}
               autoCapitalize="sentences"
               autoCorrect
-              cursorColor={textColor}
+              cursorColor={isRawMode ? textColor : "transparent"}
               multiline
               onChangeText={handleBodyChange}
               paddingLeft={0}
               placeholder="Type type type"
-              placeholderTextColor={textColor}
+              placeholderTextColor={isRawMode ? textColor : "transparent"}
+              pointerEvents={isRawMode ? "auto" : "none"}
               ref={bodyInputRef}
               scrollEnabled={false}
-              selectionColor={textColor}
-              style={[styles.bodyInput, { color: textColor }]}
+              selectionColor={isRawMode ? textColor : "transparent"}
+              style={[
+                styles.bodyInput,
+                { color: isRawMode ? textColor : "transparent" },
+              ]}
               textAlignVertical="top"
               value={body}
             />
-          ) : (
-            <HapticPressable onPress={handleRenderedPress}>
-              {body.trim() ? (
-                <MarkdownRenderer textColor={textColor}>
-                  {body}
-                </MarkdownRenderer>
-              ) : (
-                <StyledText style={[styles.placeholder, { color: textColor }]}>
-                  Type type type
-                </StyledText>
-              )}
-            </HapticPressable>
-          )}
+            {!isRawMode && (
+              <HapticPressable
+                onPress={handleRenderedPress}
+                style={StyleSheet.absoluteFillObject}
+              >
+                {body.trim() ? (
+                  <MarkdownRenderer textColor={textColor}>
+                    {body}
+                  </MarkdownRenderer>
+                ) : (
+                  <StyledText
+                    style={[styles.placeholder, { color: textColor }]}
+                  >
+                    Type type type
+                  </StyledText>
+                )}
+              </HapticPressable>
+            )}
+          </View>
         </ScrollView>
       </SafeAreaView>
 
@@ -314,6 +330,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: n(22),
     paddingTop: n(10),
     paddingBottom: n(40),
+    flexGrow: 1,
+  },
+  editorContainer: {
     flexGrow: 1,
   },
   bodyInput: {
