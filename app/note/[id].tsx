@@ -240,6 +240,7 @@ export default function NoteEditorScreen() {
               allowFontScaling={false}
               autoCapitalize="sentences"
               autoCorrect
+              blurOnSubmit={false}
               cursorColor={isRawMode ? textColor : "transparent"}
               multiline
               onChangeText={handleBodyChange}
