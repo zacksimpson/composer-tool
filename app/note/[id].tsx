@@ -20,7 +20,6 @@ import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
 import { getDisplayTitle } from "@/utils/stripMarkdown";
 
-const RENDER_DEBOUNCE_MS = 300;
 const PERSIST_DEBOUNCE_MS = 600;
 
 export default function NoteEditorScreen() {
@@ -39,8 +38,9 @@ export default function NoteEditorScreen() {
   const note = notes.find((n) => n.id === id);
 
   const [body, setBody] = useState(note?.body ?? "");
-  const [isRawMode, setIsRawMode] = useState(
-    autoFocus === "1" || (note?.body ?? "") === ""
+  // Start in preview for existing notes with content, edit for new/empty notes
+  const [isPreviewMode, setIsPreviewMode] = useState(
+    autoFocus !== "1" && (note?.body ?? "").trim() !== ""
   );
   const [isTitleEditing, setIsTitleEditing] = useState(false);
   const [titleDraft, setTitleDraft] = useState(note?.title ?? "");
@@ -49,17 +49,15 @@ export default function NoteEditorScreen() {
 
   const bodyInputRef = useRef<TextInput>(null);
   const titleInputRef = useRef<TextInput>(null);
-  const renderDebounceRef = useRef<ReturnType<typeof setTimeout>>();
   const persistDebounceRef = useRef<ReturnType<typeof setTimeout>>();
   const bodyRef = useRef(body);
   bodyRef.current = body;
-  // Refs to capture latest values for the unmount save (avoids stale closures)
   const idRef = useRef(id);
   idRef.current = id;
   const updateNoteRef = useRef(updateNote);
   updateNoteRef.current = updateNote;
 
-  // Save on unmount — uses refs so the effect never needs to re-run
+  // Save on unmount
   useEffect(
     () => () => {
       if (persistDebounceRef.current) {
@@ -104,18 +102,6 @@ export default function NoteEditorScreen() {
     setBody(text);
     bodyRef.current = text;
 
-    // Snap to raw mode while typing
-    if (renderDebounceRef.current) {
-      clearTimeout(renderDebounceRef.current);
-    }
-    if (!isRawMode) {
-      setIsRawMode(true);
-    }
-    renderDebounceRef.current = setTimeout(() => {
-      setIsRawMode(false);
-    }, RENDER_DEBOUNCE_MS);
-
-    // Debounced persist
     if (persistDebounceRef.current) {
       clearTimeout(persistDebounceRef.current);
     }
@@ -124,9 +110,11 @@ export default function NoteEditorScreen() {
     }, PERSIST_DEBOUNCE_MS);
   };
 
-  const handleRenderedPress = () => {
-    setIsRawMode(true);
-    bodyInputRef.current?.focus();
+  const handleTogglePreview = () => {
+    if (!isPreviewMode) {
+      Keyboard.dismiss();
+    }
+    setIsPreviewMode((prev) => !prev);
   };
 
   const handleTitleBlur = () => {
@@ -176,7 +164,7 @@ export default function NoteEditorScreen() {
             </View>
           </HapticPressable>
 
-          {/* Title — tappable to rename, or editable TextInput */}
+          {/* Title */}
           {isTitleEditing ? (
             <TextInput
               allowFontScaling={false}
@@ -205,19 +193,30 @@ export default function NoteEditorScreen() {
             </HapticPressable>
           )}
 
-          {/* Hamburger menu */}
-          <HapticPressable
-            onPress={() =>
-              router.push({
-                pathname: "/note-actions/[id]",
-                params: { id },
-              })
-            }
-          >
-            <View style={styles.headerBtn}>
-              <MaterialIcons color={textColor} name="menu" size={n(28)} />
-            </View>
-          </HapticPressable>
+          {/* Right: preview toggle + hamburger */}
+          <View style={styles.headerRight}>
+            <HapticPressable onPress={handleTogglePreview}>
+              <View style={styles.headerBtn}>
+                <MaterialIcons
+                  color={textColor}
+                  name={isPreviewMode ? "edit" : "visibility"}
+                  size={n(24)}
+                />
+              </View>
+            </HapticPressable>
+            <HapticPressable
+              onPress={() =>
+                router.push({
+                  pathname: "/note-actions/[id]",
+                  params: { id },
+                })
+              }
+            >
+              <View style={styles.headerBtn}>
+                <MaterialIcons color={textColor} name="menu" size={n(28)} />
+              </View>
+            </HapticPressable>
+          </View>
         </View>
 
         {/* Body */}
@@ -229,13 +228,11 @@ export default function NoteEditorScreen() {
           showsVerticalScrollIndicator={false}
           style={styles.bodyScroll}
         >
-          {/*
-           * TextInput stays mounted and props never change while focused,
-           * so Android never calls restartInput() and the IME stays
-           * connected — keyboard and Return key work normally.
-           * The opaque overlay covers the raw text in rendered mode.
-           */}
-          <View style={styles.editorContainer}>
+          {isPreviewMode ? (
+            <MarkdownRenderer textColor={textColor}>
+              {body.trim() ? body : " "}
+            </MarkdownRenderer>
+          ) : (
             <TextInput
               allowFontScaling={false}
               autoCapitalize="sentences"
@@ -254,25 +251,7 @@ export default function NoteEditorScreen() {
               textAlignVertical="top"
               value={body}
             />
-            {!isRawMode && (
-              <HapticPressable
-                onPress={handleRenderedPress}
-                style={[StyleSheet.absoluteFillObject, { backgroundColor: bg }]}
-              >
-                {body.trim() ? (
-                  <MarkdownRenderer textColor={textColor}>
-                    {body}
-                  </MarkdownRenderer>
-                ) : (
-                  <StyledText
-                    style={[styles.placeholder, { color: textColor }]}
-                  >
-                    Type type type
-                  </StyledText>
-                )}
-              </HapticPressable>
-            )}
-          </View>
+          )}
         </ScrollView>
       </SafeAreaView>
 
@@ -302,6 +281,10 @@ const styles = StyleSheet.create({
     paddingTop: n(6),
     paddingRight: n(4),
   },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   titlePressable: {
     flex: 1,
     alignItems: "center",
@@ -327,9 +310,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: n(22),
     paddingTop: n(10),
     paddingBottom: n(40),
-    flexGrow: 1,
-  },
-  editorContainer: {
     flexGrow: 1,
   },
   bodyInput: {
