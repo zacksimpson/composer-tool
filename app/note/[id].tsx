@@ -219,38 +219,40 @@ export default function NoteEditorScreen() {
           </View>
         </View>
 
-        {/* Body — preview uses a ScrollView; edit is a full-screen TextInput
-            that scrolls itself. No outer scroll in edit mode means no
-            scroll-triggered keyboard dismiss on Android. */}
-        {isPreviewMode ? (
-          <ScrollView
-            contentContainerStyle={styles.bodyContent}
-            overScrollMode="never"
-            showsVerticalScrollIndicator={false}
-            style={styles.bodyScroll}
-          >
+        {/* Body */}
+        <ScrollView
+          contentContainerStyle={styles.bodyContent}
+          keyboardDismissMode="none"
+          keyboardShouldPersistTaps="handled"
+          overScrollMode="never"
+          showsVerticalScrollIndicator={false}
+          style={styles.bodyScroll}
+        >
+          {isPreviewMode ? (
             <MarkdownRenderer textColor={textColor}>
               {body.trim() ? body : " "}
             </MarkdownRenderer>
-          </ScrollView>
-        ) : (
-          <TextInput
-            allowFontScaling={false}
-            autoCapitalize="sentences"
-            autoCorrect
-            blurOnSubmit={false}
-            cursorColor={textColor}
-            multiline
-            onChangeText={handleBodyChange}
-            placeholder="Type type type"
-            placeholderTextColor={textColor}
-            ref={bodyInputRef}
-            selectionColor={textColor}
-            style={[styles.bodyInput, { color: textColor }]}
-            textAlignVertical="top"
-            value={body}
-          />
-        )}
+          ) : (
+            <TextInput
+              allowFontScaling={false}
+              autoCapitalize="sentences"
+              autoCorrect
+              blurOnSubmit={false}
+              cursorColor={textColor}
+              multiline
+              onChangeText={handleBodyChange}
+              paddingLeft={0}
+              placeholder="Type type type"
+              placeholderTextColor={textColor}
+              ref={bodyInputRef}
+              scrollEnabled={false}
+              selectionColor={textColor}
+              style={[styles.bodyInput, { color: textColor }]}
+              textAlignVertical="top"
+              value={body}
+            />
+          )}
+        </ScrollView>
       </SafeAreaView>
 
       <Toast
@@ -311,13 +313,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   bodyInput: {
-    flex: 1,
     fontFamily: "PublicSans-Regular",
     fontSize: n(18),
     lineHeight: n(28),
-    paddingBottom: n(40),
-    paddingHorizontal: n(22),
-    paddingTop: n(10),
+    minHeight: n(200),
+    paddingLeft: 0,
   },
   placeholder: {
     fontSize: n(18),
