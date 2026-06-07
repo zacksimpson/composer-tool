@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Composer",
+    "slug": "composer-tool",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "composer-tool",
+    "icon": "./assets/images/icon.png",
+    "android": {
+      "backgroundColor": "#000000",
+      "package": "com.zacksimpson.composer"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/PublicSans-Regular.ttf"]
+        }
+      ],
+      "./plugins/withAndroidConfigChanges",
+      "./plugins/withAndroidTheme",
+      "./plugins/withDebugApplicationIdSuffix"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": ""
+      }
+    },
+    "owner": "zacksimpson"
+  }
+}
