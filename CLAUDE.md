@@ -19,6 +19,7 @@ Users write notes in Markdown. While typing, raw syntax is displayed. After a ~3
 - **AsyncStorage** for all data persistence
 - **`@ronradtke/react-native-markdown-display`** for markdown rendering
 - **`expo-clipboard`** for copy-to-clipboard actions
+- **`expo-dev-client`** for development builds (required by expo-router SDK 50+ to enable hot reload via the dev server)
 - **EAS Build** for production APKs
 - **Biome / Ultracite** for linting (`bun run check` / `bun run fix`)
 - **PublicSans-Regular** font throughout
