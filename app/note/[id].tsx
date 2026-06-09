@@ -1,16 +1,12 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Keyboard,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import { StyleSheet, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import type { WebViewMessageEvent } from "react-native-webview";
+import WebView from "react-native-webview";
+import { MILKDOWN_EDITOR_HTML } from "@/assets/milkdown-editor";
 import { HapticPressable } from "@/components/HapticPressable";
-import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { StyledText } from "@/components/StyledText";
 import { SwipeBackContainer } from "@/components/SwipeBackContainer";
 import { Toast } from "@/components/Toast";
@@ -31,23 +27,19 @@ export default function NoteEditorScreen() {
   }>();
 
   const { invertColors } = useInvertColors();
-  const { notes, updateNote, renameNote } = useComposer();
+  const { notes, updateNote, renameNote, deleteNote } = useComposer();
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
 
   const note = notes.find((n) => n.id === id);
 
   const [body, setBody] = useState(note?.body ?? "");
-  // Start in preview for existing notes with content, edit for new/empty notes
-  const [isPreviewMode, setIsPreviewMode] = useState(
-    autoFocus !== "1" && (note?.body ?? "").trim() !== ""
-  );
   const [isTitleEditing, setIsTitleEditing] = useState(false);
   const [titleDraft, setTitleDraft] = useState(note?.title ?? "");
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
-  const bodyInputRef = useRef<TextInput>(null);
+  const webViewRef = useRef<WebView>(null);
   const titleInputRef = useRef<TextInput>(null);
   const persistDebounceRef = useRef<ReturnType<typeof setTimeout>>();
   const bodyRef = useRef(body);
@@ -56,30 +48,51 @@ export default function NoteEditorScreen() {
   idRef.current = id;
   const updateNoteRef = useRef(updateNote);
   updateNoteRef.current = updateNote;
+  const deleteNoteRef = useRef(deleteNote);
+  deleteNoteRef.current = deleteNote;
+  const noteTitleRef = useRef(note?.title ?? null);
+  noteTitleRef.current = note?.title ?? null;
 
-  // Save on unmount
+  // Stamp initial content and theme into the HTML once on mount.
+  // Replacing string literals in the bundle avoids an async init roundtrip —
+  // the editor starts with the correct content and colors immediately.
+  const editorHtml = useRef(
+    MILKDOWN_EDITOR_HTML.replace(
+      '"COMPOSER_INIT"',
+      JSON.stringify(note?.body ?? "")
+    )
+      .replaceAll("COMPOSER_BG", bg)
+      .replaceAll("COMPOSER_TEXT", textColor)
+  ).current;
+
+  // Save on unmount — delete if body is empty and no custom title was set
   useEffect(
     () => () => {
       if (persistDebounceRef.current) {
         clearTimeout(persistDebounceRef.current);
       }
       if (idRef.current) {
-        updateNoteRef.current(idRef.current, {
-          body: bodyRef.current,
-          updatedAt: Date.now(),
-        });
+        const isEmpty =
+          bodyRef.current.trim() === "" && noteTitleRef.current === null;
+        if (isEmpty) {
+          deleteNoteRef.current(idRef.current);
+        } else {
+          updateNoteRef.current(idRef.current, {
+            body: bodyRef.current,
+            updatedAt: Date.now(),
+          });
+        }
       }
     },
     []
   );
 
-  // Auto-focus body for new notes
+  // Push theme changes into the live editor after invertColors toggles
   useEffect(() => {
-    if (autoFocus === "1") {
-      const t = setTimeout(() => bodyInputRef.current?.focus(), 100);
-      return () => clearTimeout(t);
-    }
-  }, [autoFocus]);
+    webViewRef.current?.injectJavaScript(
+      `window.composerBridge?.setTheme(${JSON.stringify(bg)}, ${JSON.stringify(textColor)}); true;`
+    );
+  }, [bg, textColor]);
 
   // Handle params returned from note-actions screen
   useFocusEffect(
@@ -98,23 +111,43 @@ export default function NoteEditorScreen() {
     }, [action, toast, note?.title])
   );
 
-  const handleBodyChange = (text: string) => {
-    setBody(text);
-    bodyRef.current = text;
-
-    if (persistDebounceRef.current) {
-      clearTimeout(persistDebounceRef.current);
+  const handleWebViewLoad = () => {
+    if (autoFocus === "1") {
+      setTimeout(() => {
+        webViewRef.current?.injectJavaScript(
+          "window.composerBridge?.focus(); true;"
+        );
+      }, 150);
     }
-    persistDebounceRef.current = setTimeout(() => {
-      updateNote(id, { body: text, updatedAt: Date.now() });
-    }, PERSIST_DEBOUNCE_MS);
   };
 
-  const handleTogglePreview = () => {
-    if (!isPreviewMode) {
-      Keyboard.dismiss();
+  const handleMessage = (event: WebViewMessageEvent) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data) as {
+        type: string;
+        markdown?: string;
+      };
+      if (data.type === "change" && data.markdown !== undefined) {
+        const { markdown } = data;
+        setBody(markdown);
+        bodyRef.current = markdown;
+        if (persistDebounceRef.current) {
+          clearTimeout(persistDebounceRef.current);
+        }
+        persistDebounceRef.current = setTimeout(() => {
+          updateNote(id, { body: markdown, updatedAt: Date.now() });
+        }, PERSIST_DEBOUNCE_MS);
+      }
+    } catch {
+      // non-JSON WebView message — ignore
     }
-    setIsPreviewMode((prev) => !prev);
+  };
+
+  const handleBack = () => {
+    webViewRef.current?.injectJavaScript(
+      "document.activeElement?.blur(); true;"
+    );
+    goBack();
   };
 
   const handleTitleBlur = () => {
@@ -136,12 +169,7 @@ export default function NoteEditorScreen() {
   }
 
   return (
-    <SwipeBackContainer
-      onSwipeBack={() => {
-        Keyboard.dismiss();
-        goBack();
-      }}
-    >
+    <SwipeBackContainer onSwipeBack={handleBack}>
       <SafeAreaView
         edges={["top"]}
         style={[styles.container, { backgroundColor: bg }]}
@@ -149,12 +177,7 @@ export default function NoteEditorScreen() {
         {/* Header */}
         <View style={[styles.header, { backgroundColor: bg }]}>
           {/* Back */}
-          <HapticPressable
-            onPress={() => {
-              Keyboard.dismiss();
-              goBack();
-            }}
-          >
+          <HapticPressable onPress={handleBack}>
             <View style={styles.headerBtn}>
               <MaterialIcons
                 color={textColor}
@@ -193,66 +216,37 @@ export default function NoteEditorScreen() {
             </HapticPressable>
           )}
 
-          {/* Right: preview toggle + hamburger */}
-          <View style={styles.headerRight}>
-            <HapticPressable onPress={handleTogglePreview}>
-              <View style={styles.headerBtn}>
-                <MaterialIcons
-                  color={textColor}
-                  name={isPreviewMode ? "edit" : "visibility"}
-                  size={n(24)}
-                />
-              </View>
-            </HapticPressable>
-            <HapticPressable
-              onPress={() =>
-                router.push({
-                  pathname: "/note-actions/[id]",
-                  params: { id },
-                })
-              }
-            >
-              <View style={styles.headerBtn}>
-                <MaterialIcons color={textColor} name="menu" size={n(28)} />
-              </View>
-            </HapticPressable>
-          </View>
+          {/* Hamburger */}
+          <HapticPressable
+            onPress={() =>
+              router.push({
+                pathname: "/note-actions/[id]",
+                params: { id },
+              })
+            }
+          >
+            <View style={styles.headerBtn}>
+              <MaterialIcons color={textColor} name="menu" size={n(28)} />
+            </View>
+          </HapticPressable>
         </View>
 
-        {/* Body */}
-        <ScrollView
-          contentContainerStyle={styles.bodyContent}
-          keyboardDismissMode="none"
-          keyboardShouldPersistTaps="handled"
+        {/* Editor */}
+        <WebView
+          backgroundColor={bg}
+          onError={(e) =>
+            console.warn("[Editor] WebView error:", e.nativeEvent.description)
+          }
+          onLoad={handleWebViewLoad}
+          onMessage={handleMessage}
+          originWhitelist={["*"]}
           overScrollMode="never"
+          ref={webViewRef}
+          scrollEnabled
           showsVerticalScrollIndicator={false}
-          style={styles.bodyScroll}
-        >
-          {isPreviewMode ? (
-            <MarkdownRenderer textColor={textColor}>
-              {body.trim() ? body : " "}
-            </MarkdownRenderer>
-          ) : (
-            <TextInput
-              allowFontScaling={false}
-              autoCapitalize="sentences"
-              autoCorrect
-              blurOnSubmit={false}
-              cursorColor={textColor}
-              multiline
-              onChangeText={handleBodyChange}
-              paddingLeft={0}
-              placeholder="Type type type"
-              placeholderTextColor={textColor}
-              ref={bodyInputRef}
-              scrollEnabled={false}
-              selectionColor={textColor}
-              style={[styles.bodyInput, { color: textColor }]}
-              textAlignVertical="top"
-              value={body}
-            />
-          )}
-        </ScrollView>
+          source={{ html: editorHtml }}
+          style={[styles.webView, { backgroundColor: bg }]}
+        />
       </SafeAreaView>
 
       <Toast
@@ -281,10 +275,6 @@ const styles = StyleSheet.create({
     paddingTop: n(6),
     paddingRight: n(4),
   },
-  headerRight: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   titlePressable: {
     flex: 1,
     alignItems: "center",
@@ -303,24 +293,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     textAlign: "center",
   },
-  bodyScroll: {
+  webView: {
     flex: 1,
-  },
-  bodyContent: {
-    paddingHorizontal: n(22),
-    paddingTop: n(10),
-    paddingBottom: n(40),
-    flexGrow: 1,
-  },
-  bodyInput: {
-    fontFamily: "PublicSans-Regular",
-    fontSize: n(18),
-    lineHeight: n(28),
-    minHeight: n(200),
-    paddingLeft: 0,
-  },
-  placeholder: {
-    fontSize: n(18),
-    opacity: 0.4,
   },
 });

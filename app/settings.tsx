@@ -1,4 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HapticPressable } from "@/components/HapticPressable";
@@ -42,6 +43,20 @@ export default function SettingsScreen() {
             onValueChange={setInvertColors}
             value={invertColors}
           />
+
+          {/* TODO: Remove — Milkdown WebView proof-of-concept */}
+          <HapticPressable onPress={() => router.push("/editor-test")}>
+            <View style={styles.devRow}>
+              <StyledText style={[styles.devLabel, { color: textColor }]}>
+                Test Milkdown Editor (PoC)
+              </StyledText>
+              <MaterialIcons
+                color={textColor}
+                name="arrow-forward-ios"
+                size={n(16)}
+              />
+            </View>
+          </HapticPressable>
         </View>
       </SafeAreaView>
     </SwipeBackContainer>
@@ -71,5 +86,15 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: n(22),
     paddingTop: n(16),
+  },
+  devRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: n(14),
+  },
+  devLabel: {
+    fontFamily: "PublicSans-Regular",
+    fontSize: n(17),
   },
 });

@@ -28,10 +28,15 @@ export function getDisplayTitle(title: string | null, body: string): string {
   if (title) {
     return title;
   }
-  const firstLine = body
-    .split("\n")[0]
-    .replace(LEADING_HEADING_RE, "")
-    .replace(INLINE_MARKER_RE, "")
-    .trim();
-  return firstLine || "Untitled";
+  for (const line of body.split("\n")) {
+    const cleaned = line
+      .replace(/<[^>]+>/g, "") // strip HTML tags like <br />
+      .replace(LEADING_HEADING_RE, "")
+      .replace(INLINE_MARKER_RE, "")
+      .trim();
+    if (cleaned) {
+      return cleaned;
+    }
+  }
+  return "Untitled";
 }

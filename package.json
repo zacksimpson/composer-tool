@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "adb reverse tcp:8081 tcp:8081 && expo run:android --no-bundler; adb shell am start -n com.zacksimpson.composer.debug/com.zacksimpson.composer.MainActivity; npx expo start",
+    "build:editor": "cd editor-web && bun install && bun run build",
     "check": "ultracite check",
     "fix": "ultracite fix"
   },
@@ -25,7 +26,8 @@
     "react-native-gesture-handler": "~2.30.0",
     "react-native-safe-area-context": "^5.6.2",
     "react-native-screens": "^4.23.0",
-    "react-native-svg": "~15.15.0"
+    "react-native-svg": "~15.15.0",
+    "react-native-webview": "13.16.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.9",
