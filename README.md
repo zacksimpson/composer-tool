@@ -22,6 +22,18 @@ Built with [vandamd's light-template](https://github.com/vandamd/light-template)
 
 ---
 
+## Supported Markdown
+
+* **Bold** — `**text**`
+* *Italic* — `*text*`
+* Headings — `# H1`, `## H2`, `### H3`
+* Unordered lists — `- item`
+* Ordered lists — `1. item`
+* Inline code — `` `code` ``
+* Blockquotes — `> text`
+
+---
+
 ## Installing on Light Phone III
 
 > [!WARNING]
