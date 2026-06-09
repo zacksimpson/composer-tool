@@ -2,23 +2,20 @@
 
 
 
-A distraction-free Markdown notes app for the Light Phone III.
+A distraction-free Markdown notes tool for the Light Phone III.
 
-Composer is not a rich text editor. It's a minimal writing tool for people who want to capture thoughts, ideas, and notes without friction — using Markdown that renders as you type, so syntax stays out of the way. Built to feel like a natural part of the Light Phone experience.
+Composer is a minimal writing tool for people who want to capture thoughts, ideas, and notes – using Markdown that renders as you type and makes syntax disappear. Built to feel like a natural extension of the Light Phone experience.
 
-Built with [vandamd's light-template](https://github.com/vandamd/light-template) – a community-made Expo template for building LightOS-style apps for the Light Phone III.
 
 ---
 
 ## Features
 
-* WYSIWYG Markdown editing — formatting renders in real time as you type
+* WYSIWYG Markdown editing – formatting renders in real time as you type
+* Copy note contents as either Markdown or plain text
 * Notes sorted by most recently edited, always at the top
-* Note titles derived automatically from the first line of content
 * Rename notes independently from their body content
-* Copy note contents to clipboard
 * Delete notes individually or in bulk
-* Inverted colors mode (white background)
 
 ---
 
