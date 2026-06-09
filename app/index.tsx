@@ -152,7 +152,7 @@ export default function NotesListScreen() {
                       <MaterialIcons
                         color={textColor}
                         name="edit"
-                        size={n(14)}
+                        size={n(18)}
                         style={styles.editIcon}
                       />
                       <StyledText style={styles.noteDate}>
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   noteTitle: {
-    fontSize: n(30),
+    fontSize: n(26),
   },
   noteMeta: {
     flexDirection: "row",
@@ -269,11 +269,9 @@ const styles = StyleSheet.create({
   },
   editIcon: {
     marginRight: n(5),
-    opacity: 0.7,
   },
   noteDate: {
-    fontSize: n(14),
-    opacity: 0.7,
+    fontSize: n(18),
   },
   toolbar: {
     flexDirection: "row",
