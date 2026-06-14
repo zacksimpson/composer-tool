@@ -33,6 +33,44 @@ const DEFAULT_SETTINGS: ComposerSettings = {
 const NOTES_KEY = "composer:notes";
 const SETTINGS_KEY = "composer:settings";
 
+// ─── Welcome Note ─────────────────────────────────────────────────────────────
+
+const WELCOME_NOTE_BODY = [
+  "# Welcome to Composer",
+  "",
+  "Composer supports Markdown formatting. Here's what you can use:",
+  "",
+  "**bold** — `**bold**`",
+  "",
+  "*italic* — `*italic*`",
+  "",
+  " ",
+  "",
+  "# Heading 1 — `# text`",
+  "",
+  "## Heading 2 — `## text`",
+  "",
+  "### Heading 3 — `### text`",
+  "",
+  " ",
+  "",
+  "- List item — `- text`",
+  "- Another item",
+  "",
+  " ",
+  "",
+  "1. First item — `1. text`",
+  "2. Second item",
+  "",
+  " ",
+  "",
+  "`inline code` — wrap with backticks",
+  "",
+  " ",
+  "",
+  "> Blockquote — `> text`",
+].join("\n");
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 export function generateId(): string {
@@ -91,6 +129,17 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
         } catch {
           /* ignore corrupt data */
         }
+      } else {
+        const now = Date.now();
+        const welcomeNote: Note = {
+          id: generateId(),
+          title: null,
+          body: WELCOME_NOTE_BODY,
+          createdAt: now,
+          updatedAt: now,
+        };
+        setNotes([welcomeNote]);
+        AsyncStorage.setItem(NOTES_KEY, JSON.stringify([welcomeNote]));
       }
       if (rawSettings) {
         try {

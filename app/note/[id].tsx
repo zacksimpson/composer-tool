@@ -263,6 +263,7 @@ export default function NoteEditorScreen() {
             showsVerticalScrollIndicator={false}
             source={{ html: editorHtml }}
             style={[styles.webView, { backgroundColor: bg }]}
+            textZoom={100}
           />
           {scrollIndicatorHeight > 0 && !keyboardVisible && (
             <View style={[styles.scrollTrack, { backgroundColor: textColor }]}>
