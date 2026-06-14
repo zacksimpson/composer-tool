@@ -60,19 +60,19 @@ body {
 .milkdown .ProseMirror h1 {
   font-size: 32px;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 36px;
   margin: 12px 0 6px;
 }
 .milkdown .ProseMirror h2 {
   font-size: 26px;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 30px;
   margin: 10px 0 6px;
 }
 .milkdown .ProseMirror h3 {
   font-size: 22px;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 26px;
   margin: 8px 0 4px;
 }
 .milkdown .ProseMirror h4,
@@ -90,7 +90,7 @@ body {
 }
 .milkdown .ProseMirror li {
   font-size: 20px;
-  line-height: 30px;
+  line-height: 25px;
 }
 .milkdown .ProseMirror strong {
   font-weight: 700;

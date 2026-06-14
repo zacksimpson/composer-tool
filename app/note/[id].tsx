@@ -193,6 +193,12 @@ export default function NoteEditorScreen() {
     goBack();
   };
 
+  const handleDismissKeyboard = () => {
+    webViewRef.current?.injectJavaScript(
+      "document.activeElement?.blur(); true;"
+    );
+  };
+
   const handleTitlePress = () => {
     router.push({ pathname: "/note-rename/[id]", params: { id } });
   };
@@ -232,19 +238,31 @@ export default function NoteEditorScreen() {
             </StyledText>
           </HapticPressable>
 
-          {/* Hamburger */}
-          <HapticPressable
-            onPress={() =>
-              router.push({
-                pathname: "/note-actions/[id]",
-                params: { id },
-              })
-            }
-          >
-            <View style={styles.headerBtn}>
-              <MaterialIcons color={textColor} name="menu" size={n(28)} />
-            </View>
-          </HapticPressable>
+          {/* Hamburger / dismiss keyboard */}
+          {keyboardVisible ? (
+            <HapticPressable onPress={handleDismissKeyboard}>
+              <View style={styles.headerBtn}>
+                <MaterialIcons
+                  color={textColor}
+                  name="keyboard-arrow-down"
+                  size={n(28)}
+                />
+              </View>
+            </HapticPressable>
+          ) : (
+            <HapticPressable
+              onPress={() =>
+                router.push({
+                  pathname: "/note-actions/[id]",
+                  params: { id },
+                })
+              }
+            >
+              <View style={styles.headerBtn}>
+                <MaterialIcons color={textColor} name="menu" size={n(28)} />
+              </View>
+            </HapticPressable>
+          )}
         </View>
 
         {/* Editor + scroll indicator */}
