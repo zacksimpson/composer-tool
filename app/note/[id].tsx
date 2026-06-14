@@ -43,6 +43,7 @@ export default function NoteEditorScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const webViewRef = useRef<WebView>(null);
+  const mountedAtRef = useRef(Date.now());
   const persistDebounceRef = useRef<ReturnType<typeof setTimeout>>();
   const bodyRef = useRef(body);
   bodyRef.current = body;
@@ -166,7 +167,9 @@ export default function NoteEditorScreen() {
         scrollHeight?: number;
         clientHeight?: number;
       };
-      if (data.type === "change" && data.markdown !== undefined) {
+      if (data.type === "ready") {
+        console.log(`[Editor] ready in ${Date.now() - mountedAtRef.current}ms`);
+      } else if (data.type === "change" && data.markdown !== undefined) {
         const { markdown } = data;
         setBody(markdown);
         bodyRef.current = markdown;

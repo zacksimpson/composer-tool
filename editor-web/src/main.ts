@@ -34,6 +34,8 @@ async function main() {
     .use(listener)
     .create();
 
+  window.ReactNativeWebView?.postMessage(JSON.stringify({ type: "ready", t: performance.now() }));
+
   let keyboardHeight = 0;
 
   function scrollCursorIntoView() {
