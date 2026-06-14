@@ -1,17 +1,22 @@
 import "./style.css";
-import { Editor, defaultValueCtx, rootCtx } from "@milkdown/core";
+import {
+  Editor,
+  defaultValueCtx,
+  editorViewCtx,
+  parserCtx,
+  rootCtx,
+} from "@milkdown/core";
 import { listener, listenerCtx } from "@milkdown/plugin-listener";
 import { commonmark } from "@milkdown/preset-commonmark";
 
-// These string literals are replaced by React Native before the HTML is
-// passed to the WebView — see note/[id].tsx editorHtml computation.
-// They must remain as plain string literals so the replacement is reliable.
-const INITIAL_CONTENT = "COMPOSER_INIT";
+// COMPOSER_BG and COMPOSER_TEXT are replaced at render time by RN.
+// The editor starts with empty content; content is injected via composerBridge.setContent().
 
 declare global {
   interface Window {
     ReactNativeWebView?: { postMessage: (msg: string) => void };
     composerBridge: {
+      setContent: (markdown: string) => void;
       setTheme: (bg: string, textColor: string) => void;
       focus: () => void;
       setKeyboardHeight: (height: number) => void;
@@ -20,11 +25,14 @@ declare global {
 }
 
 async function main() {
-  await Editor.make()
+  let suppressChange = false;
+
+  const editor = await Editor.make()
     .config((ctx) => {
       ctx.set(rootCtx, document.getElementById("app")!);
-      ctx.set(defaultValueCtx, INITIAL_CONTENT);
+      ctx.set(defaultValueCtx, "");
       ctx.get(listenerCtx).markdownUpdated((_ctx, markdown) => {
+        if (suppressChange) return;
         window.ReactNativeWebView?.postMessage(
           JSON.stringify({ type: "change", markdown })
         );
@@ -34,7 +42,8 @@ async function main() {
     .use(listener)
     .create();
 
-  window.ReactNativeWebView?.postMessage(JSON.stringify({ type: "ready", t: performance.now() }));
+  // Signal that Milkdown is initialized and ready to receive content
+  window.ReactNativeWebView?.postMessage(JSON.stringify({ type: "editorReady" }));
 
   let keyboardHeight = 0;
 
@@ -44,8 +53,7 @@ async function main() {
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
     let rect = range.getBoundingClientRect();
-    // Empty paragraphs (e.g. after pressing Enter) return a zero rect — fall
-    // back to the parent element which has a measurable height from line-height.
+    // Empty paragraphs return a zero rect — fall back to parent element
     if (rect.top === 0 && rect.bottom === 0) {
       const node = range.startContainer;
       const el =
@@ -60,8 +68,32 @@ async function main() {
     }
   }
 
-  // Expose bridge for post-init updates from RN
   window.composerBridge = {
+    setContent(markdown) {
+      suppressChange = true;
+      editor.action((ctx) => {
+        const view = ctx.get(editorViewCtx);
+        const parse = ctx.get(parserCtx);
+        const doc = parse(markdown);
+        if (!doc) return;
+        const { state } = view;
+        view.dispatch(
+          state.tr.replaceWith(0, state.doc.content.size, doc.content)
+        );
+      });
+      window.scrollTo(0, 0);
+      requestAnimationFrame(() => {
+        suppressChange = false;
+        window.ReactNativeWebView?.postMessage(
+          JSON.stringify({
+            type: "scroll",
+            scrollTop: 0,
+            scrollHeight: document.documentElement.scrollHeight,
+            clientHeight: document.documentElement.clientHeight,
+          })
+        );
+      });
+    },
     setTheme(bg, textColor) {
       document.body.style.background = bg;
       document.body.style.color = textColor;
@@ -91,7 +123,7 @@ async function main() {
     observer.observe(pm, { childList: true, subtree: true, characterData: true });
   }
 
-  // Post initial dimensions after first paint so the indicator appears immediately
+  // Post initial scroll metrics after first paint
   requestAnimationFrame(() => {
     window.ReactNativeWebView?.postMessage(
       JSON.stringify({
@@ -103,7 +135,7 @@ async function main() {
     );
   });
 
-  // Post scroll metrics to RN so it can render a matching scroll indicator
+  // Post scroll metrics to RN for the scroll indicator
   let rafPending = false;
   document.addEventListener(
     "scroll",
