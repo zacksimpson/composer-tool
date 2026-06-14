@@ -14,6 +14,7 @@ declare global {
     composerBridge: {
       setTheme: (bg: string, textColor: string) => void;
       focus: () => void;
+      setKeyboardHeight: (height: number) => void;
     };
   }
 }
@@ -33,6 +34,30 @@ async function main() {
     .use(listener)
     .create();
 
+  let keyboardHeight = 0;
+
+  function scrollCursorIntoView() {
+    if (keyboardHeight === 0) return;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    let rect = range.getBoundingClientRect();
+    // Empty paragraphs (e.g. after pressing Enter) return a zero rect — fall
+    // back to the parent element which has a measurable height from line-height.
+    if (rect.top === 0 && rect.bottom === 0) {
+      const node = range.startContainer;
+      const el =
+        node.nodeType === Node.TEXT_NODE
+          ? (node as Text).parentElement
+          : (node as Element);
+      if (el) rect = el.getBoundingClientRect();
+    }
+    const visibleBottom = window.innerHeight - keyboardHeight - 16;
+    if (rect.bottom > visibleBottom) {
+      window.scrollBy({ top: rect.bottom - visibleBottom, behavior: "instant" });
+    }
+  }
+
   // Expose bridge for post-init updates from RN
   window.composerBridge = {
     setTheme(bg, textColor) {
@@ -41,6 +66,10 @@ async function main() {
     },
     focus() {
       document.querySelector<HTMLElement>(".ProseMirror")?.focus();
+    },
+    setKeyboardHeight(height) {
+      keyboardHeight = height;
+      scrollCursorIntoView();
     },
   };
 
@@ -52,19 +81,13 @@ async function main() {
     }
   });
 
-  // Scroll cursor into view when keyboard appears
-  window.visualViewport?.addEventListener("resize", () => {
-    setTimeout(() => {
-      const focusNode = window.getSelection()?.focusNode;
-      if (focusNode) {
-        const el =
-          focusNode.nodeType === Node.TEXT_NODE
-            ? (focusNode as Text).parentElement
-            : (focusNode as Element);
-        el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }
-    }, 100);
-  });
+  const pm = document.querySelector(".ProseMirror");
+  if (pm) {
+    const observer = new MutationObserver(() => {
+      requestAnimationFrame(scrollCursorIntoView);
+    });
+    observer.observe(pm, { childList: true, subtree: true, characterData: true });
+  }
 }
 
 main();

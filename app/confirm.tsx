@@ -30,7 +30,7 @@ export default function ConfirmScreen() {
     }
 
     const path = params.returnPath || "/";
-    router.dismissTo(`${path}?toast=Deleted`);
+    router.dismissTo(`${path}?toast=deleted`);
   };
 
   const handleBack = () => {

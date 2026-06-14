@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Keyboard, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { WebViewMessageEvent } from "react-native-webview";
 import WebView from "react-native-webview";
@@ -91,6 +91,25 @@ export default function NoteEditorScreen() {
       `window.composerBridge?.setTheme(${JSON.stringify(bg)}, ${JSON.stringify(textColor)}); true;`
     );
   }, [bg, textColor]);
+
+  // Keep the WebView informed of keyboard height so it can scroll the cursor into view
+  useEffect(() => {
+    const show = Keyboard.addListener("keyboardDidShow", (e) => {
+      const h = Math.round(e.endCoordinates.height);
+      webViewRef.current?.injectJavaScript(
+        `window.composerBridge?.setKeyboardHeight(${h}); true;`
+      );
+    });
+    const hide = Keyboard.addListener("keyboardDidHide", () => {
+      webViewRef.current?.injectJavaScript(
+        "window.composerBridge?.setKeyboardHeight(0); true;"
+      );
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   // Consume toast param returned from other screens
   useFocusEffect(
