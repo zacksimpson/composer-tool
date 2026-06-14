@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HapticPressable } from "@/components/HapticPressable";
+import { NoteEditIcon } from "@/components/NoteEditIcon";
 import { PlusEditIcon } from "@/components/PlusEditIcon";
 import { SettingsIcon } from "@/components/SettingsIcon";
 import { StyledText } from "@/components/StyledText";
@@ -108,6 +109,9 @@ export default function NotesListScreen() {
       edges={["top"]}
       style={[styles.container, { backgroundColor: bg }]}
     >
+      {/* Top spacing */}
+      <View style={styles.header} />
+
       {/* Notes list */}
       <View style={styles.scrollWrapper}>
         <Animated.ScrollView
@@ -149,10 +153,9 @@ export default function NotesListScreen() {
                       {getDisplayTitle(note.title, note.body)}
                     </StyledText>
                     <View style={styles.noteMeta}>
-                      <MaterialIcons
+                      <NoteEditIcon
                         color={textColor}
-                        name="edit"
-                        size={n(18)}
+                        size={18}
                         style={styles.editIcon}
                       />
                       <StyledText style={styles.noteDate}>
@@ -243,15 +246,16 @@ export default function NotesListScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  header: { height: n(16) },
   scrollWrapper: { flex: 1, flexDirection: "row", position: "relative" },
   scrollTrack: scrollIndicatorBaseStyles.track,
   scrollThumb: scrollIndicatorBaseStyles.thumb,
   noteRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: n(22),
+    paddingHorizontal: n(26),
     paddingVertical: n(11),
-    paddingRight: n(32),
+    paddingRight: n(36),
   },
   checkboxArea: {
     marginRight: n(12),
@@ -260,7 +264,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   noteTitle: {
-    fontSize: n(26),
+    fontSize: n(24),
+    letterSpacing: n(1),
   },
   noteMeta: {
     flexDirection: "row",
@@ -271,14 +276,14 @@ const styles = StyleSheet.create({
     marginRight: n(5),
   },
   noteDate: {
-    fontSize: n(18),
+    fontSize: n(16),
   },
   toolbar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: n(11),
-    paddingHorizontal: n(20),
+    paddingHorizontal: n(26),
   },
   toolbarLabel: {
     fontFamily: "PublicSans-Regular",

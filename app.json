@@ -2,7 +2,7 @@
   "expo": {
     "name": "Composer",
     "slug": "composer-tool",
-    "version": "1.0.0",
+    "version": "0.0.2",
     "orientation": "portrait",
     "scheme": "composer-tool",
     "icon": "./assets/images/icon.png",

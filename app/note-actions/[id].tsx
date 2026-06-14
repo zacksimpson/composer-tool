@@ -21,7 +21,10 @@ export default function NoteActionsScreen() {
   const note = notes.find((n) => n.id === id);
 
   const handleRename = () => {
-    router.dismissTo(`/note/${id}?action=rename`);
+    router.push({
+      pathname: "/note-rename/[id]",
+      params: { id, from: "actions" },
+    });
   };
 
   const handleCopyMarkdown = async () => {

@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { WebViewMessageEvent } from "react-native-webview";
 import WebView from "react-native-webview";
@@ -19,31 +19,28 @@ import { getDisplayTitle } from "@/utils/stripMarkdown";
 const PERSIST_DEBOUNCE_MS = 600;
 
 export default function NoteEditorScreen() {
-  const { id, autoFocus, action, toast } = useLocalSearchParams<{
+  const { id, autoFocus, toast } = useLocalSearchParams<{
     id: string;
     autoFocus?: string;
-    action?: string;
     toast?: string;
   }>();
 
   const { invertColors } = useInvertColors();
-  const { notes, updateNote, renameNote, deleteNote } = useComposer();
+  const { notes, updateNote, deleteNote } = useComposer();
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
 
   const note = notes.find((n) => n.id === id);
 
   const [body, setBody] = useState(note?.body ?? "");
-  const [isTitleEditing, setIsTitleEditing] = useState(false);
-  const [titleDraft, setTitleDraft] = useState(note?.title ?? "");
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
   const webViewRef = useRef<WebView>(null);
-  const titleInputRef = useRef<TextInput>(null);
   const persistDebounceRef = useRef<ReturnType<typeof setTimeout>>();
   const bodyRef = useRef(body);
   bodyRef.current = body;
+  const initialBodyRef = useRef(note?.body ?? "");
   const idRef = useRef(id);
   idRef.current = id;
   const updateNoteRef = useRef(updateNote);
@@ -74,9 +71,10 @@ export default function NoteEditorScreen() {
       if (idRef.current) {
         const isEmpty =
           bodyRef.current.trim() === "" && noteTitleRef.current === null;
+        const bodyChanged = bodyRef.current !== initialBodyRef.current;
         if (isEmpty) {
           deleteNoteRef.current(idRef.current);
-        } else {
+        } else if (bodyChanged) {
           updateNoteRef.current(idRef.current, {
             body: bodyRef.current,
             updatedAt: Date.now(),
@@ -94,21 +92,15 @@ export default function NoteEditorScreen() {
     );
   }, [bg, textColor]);
 
-  // Handle params returned from note-actions screen
+  // Consume toast param returned from other screens
   useFocusEffect(
     useCallback(() => {
-      if (action === "rename") {
-        setIsTitleEditing(true);
-        setTitleDraft(note?.title ?? "");
-        setTimeout(() => titleInputRef.current?.focus(), 100);
-        router.setParams({ action: undefined });
-      }
       if (toast) {
         setToastMessage(toast);
         setToastVisible(true);
         router.setParams({ toast: undefined });
       }
-    }, [action, toast, note?.title])
+    }, [toast])
   );
 
   const handleWebViewLoad = () => {
@@ -150,16 +142,8 @@ export default function NoteEditorScreen() {
     goBack();
   };
 
-  const handleTitleBlur = () => {
-    setIsTitleEditing(false);
-    const trimmed = titleDraft.trim() || null;
-    renameNote(id, trimmed);
-  };
-
   const handleTitlePress = () => {
-    setIsTitleEditing(true);
-    setTitleDraft(note?.title ?? "");
-    setTimeout(() => titleInputRef.current?.focus(), 50);
+    router.push({ pathname: "/note-rename/[id]", params: { id } });
   };
 
   const displayTitle = note ? getDisplayTitle(note.title, body) : "Untitled";
@@ -188,33 +172,14 @@ export default function NoteEditorScreen() {
           </HapticPressable>
 
           {/* Title */}
-          {isTitleEditing ? (
-            <TextInput
-              allowFontScaling={false}
-              autoCapitalize="none"
-              autoCorrect={false}
-              cursorColor={textColor}
-              onBlur={handleTitleBlur}
-              onChangeText={setTitleDraft}
-              onSubmitEditing={handleTitleBlur}
-              placeholder="Title"
-              placeholderTextColor={textColor}
-              ref={titleInputRef}
-              returnKeyType="done"
-              selectionColor={textColor}
-              style={[styles.titleInput, { color: textColor }]}
-              value={titleDraft}
-            />
-          ) : (
-            <HapticPressable
-              onPress={handleTitlePress}
-              style={styles.titlePressable}
-            >
-              <StyledText numberOfLines={1} style={styles.titleText}>
-                {displayTitle}
-              </StyledText>
-            </HapticPressable>
-          )}
+          <HapticPressable
+            onPress={handleTitlePress}
+            style={styles.titlePressable}
+          >
+            <StyledText numberOfLines={1} style={styles.titleText}>
+              {displayTitle}
+            </StyledText>
+          </HapticPressable>
 
           {/* Hamburger */}
           <HapticPressable
@@ -283,15 +248,6 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: n(20),
     paddingTop: n(2),
-  },
-  titleInput: {
-    flex: 1,
-    fontFamily: "PublicSans-Regular",
-    fontSize: n(20),
-    paddingHorizontal: n(8),
-    paddingLeft: 0,
-    paddingVertical: 0,
-    textAlign: "center",
   },
   webView: {
     flex: 1,

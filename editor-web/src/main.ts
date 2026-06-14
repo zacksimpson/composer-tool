@@ -44,6 +44,14 @@ async function main() {
     },
   };
 
+  // Tap anywhere in the editor area to focus ProseMirror
+  document.getElementById("app")?.addEventListener("click", (e) => {
+    const pm = document.querySelector<HTMLElement>(".ProseMirror");
+    if (pm && !pm.contains(e.target as Node)) {
+      pm.focus();
+    }
+  });
+
   // Scroll cursor into view when keyboard appears
   window.visualViewport?.addEventListener("resize", () => {
     setTimeout(() => {
