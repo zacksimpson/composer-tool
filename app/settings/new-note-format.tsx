@@ -5,24 +5,28 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { HapticPressable } from "@/components/HapticPressable";
 import { StyledText } from "@/components/StyledText";
 import { SwipeBackContainer } from "@/components/SwipeBackContainer";
-import { ToggleSwitch } from "@/components/ToggleSwitch";
-import { useComposer } from "@/contexts/ComposerContext";
+import { type NewNoteFormat, useComposer } from "@/contexts/ComposerContext";
 import { useInvertColors } from "@/contexts/InvertColorsContext";
 import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
 
-const NEW_NOTE_FORMAT_LABELS: Record<string, string> = {
-  h1: "Heading 1",
-  h2: "Heading 2",
-  h3: "Heading 3",
-  body: "Body",
-};
+const OPTIONS: { label: string; value: NewNoteFormat }[] = [
+  { label: "Heading 1", value: "h1" },
+  { label: "Heading 2", value: "h2" },
+  { label: "Heading 3", value: "h3" },
+  { label: "Body", value: "body" },
+];
 
-export default function SettingsScreen() {
-  const { invertColors, setInvertColors } = useInvertColors();
-  const { settings } = useComposer();
+export default function NewNoteFormatScreen() {
+  const { invertColors } = useInvertColors();
+  const { settings, updateSettings } = useComposer();
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
+
+  const handleSelect = (value: NewNoteFormat) => {
+    updateSettings({ newNoteFormat: value });
+    router.back();
+  };
 
   return (
     <SwipeBackContainer onSwipeBack={goBack}>
@@ -31,7 +35,7 @@ export default function SettingsScreen() {
         style={[styles.container, { backgroundColor: bg }]}
       >
         {/* Header */}
-        <View style={[styles.header, { backgroundColor: bg }]}>
+        <View style={styles.header}>
           <HapticPressable onPress={goBack}>
             <View style={styles.headerBtn}>
               <MaterialIcons
@@ -41,31 +45,32 @@ export default function SettingsScreen() {
               />
             </View>
           </HapticPressable>
-          <StyledText style={styles.headerTitle}>Settings</StyledText>
+          <StyledText style={[styles.headerTitle, { color: textColor }]}>
+            New Note Format
+          </StyledText>
           <View style={styles.headerBtn} />
         </View>
 
-        {/* Settings */}
-        <View style={styles.content}>
-          {/* New Note Format */}
-          <HapticPressable
-            onPress={() => router.push("/settings/new-note-format")}
-            style={styles.row}
-          >
-            <StyledText style={[styles.rowLabel, { color: textColor }]}>
-              New Note Format
-            </StyledText>
-            <StyledText style={[styles.rowValue, { color: textColor }]}>
-              {NEW_NOTE_FORMAT_LABELS[settings.newNoteFormat] ?? "Body"}
-            </StyledText>
-          </HapticPressable>
-
-          <ToggleSwitch
-            label="Inverted Colors"
-            onValueChange={setInvertColors}
-            value={invertColors}
-          />
-        </View>
+        {OPTIONS.map((option) => {
+          const isSelected = settings.newNoteFormat === option.value;
+          return (
+            <HapticPressable
+              key={option.value}
+              onPress={() => handleSelect(option.value)}
+              style={styles.optionRow}
+            >
+              <StyledText
+                style={[
+                  styles.optionText,
+                  { color: textColor },
+                  isSelected && styles.optionSelected,
+                ]}
+              >
+                {option.label}
+              </StyledText>
+            </HapticPressable>
+          );
+        })}
       </SafeAreaView>
     </SwipeBackContainer>
   );
@@ -91,22 +96,14 @@ const styles = StyleSheet.create({
     fontSize: n(20),
     paddingTop: n(2),
   },
-  content: {
+  optionRow: {
     paddingHorizontal: n(22),
-    paddingTop: n(16),
+    paddingVertical: n(12),
   },
-  row: {
-    flexDirection: "column",
-    alignItems: "flex-start",
-    paddingVertical: n(16),
-  },
-  rowLabel: {
-    fontSize: n(20),
-    paddingTop: n(7.5),
-    lineHeight: n(20),
-  },
-  rowValue: {
+  optionText: {
     fontSize: n(30),
-    paddingBottom: n(10),
+  },
+  optionSelected: {
+    textDecorationLine: "underline",
   },
 });

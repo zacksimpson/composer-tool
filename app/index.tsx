@@ -29,7 +29,7 @@ function formatDate(ts: number): string {
 
 export default function NotesListScreen() {
   const { invertColors } = useInvertColors();
-  const { notes, addNote, deleteNotes } = useComposer();
+  const { notes, addNote } = useComposer();
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
 
@@ -45,6 +45,8 @@ export default function NotesListScreen() {
       if (params.toast) {
         setToastMessage(params.toast);
         setToastVisible(true);
+        setIsEditMode(false);
+        setSelectedIds(new Set());
         router.setParams({ toast: undefined });
       }
     }, [params.toast])
@@ -91,18 +93,18 @@ export default function NotesListScreen() {
   };
 
   const handleDelete = () => {
-    if (selectedIds.size === 0) {
-      return;
-    }
     const ids = Array.from(selectedIds);
-    deleteNotes(ids);
-    setSelectedIds(new Set());
-    setIsEditMode(false);
+    const count = ids.length;
+    router.push({
+      pathname: "/confirm",
+      params: {
+        message: count === 1 ? "Delete this note?" : `Delete ${count} notes?`,
+        confirmText: "Delete",
+        action: `delete-notes:${ids.join(",")}`,
+        returnPath: "/",
+      },
+    });
   };
-
-  const deleteLabel =
-    selectedIds.size > 0 ? `DELETE (${selectedIds.size})` : "DELETE";
-  const deleteDisabled = selectedIds.size === 0;
 
   return (
     <SafeAreaView
@@ -188,31 +190,23 @@ export default function NotesListScreen() {
       {/* Bottom toolbar */}
       <View style={[styles.toolbar, { backgroundColor: bg }]}>
         {isEditMode ? (
-          <>
-            {/* Cancel (left) */}
+          <View style={styles.editToolbar}>
+            {/* X — centered */}
             <HapticPressable onPress={handleEditToggle}>
               <MaterialIcons color={textColor} name="close" size={n(40)} />
             </HapticPressable>
-
-            {/* Delete (center) */}
-            <HapticPressable disabled={deleteDisabled} onPress={handleDelete}>
-              <StyledText
-                style={[
-                  styles.toolbarLabel,
-                  { color: textColor, opacity: deleteDisabled ? 0.3 : 1 },
-                ]}
+            {/* DELETE — right, only when items selected */}
+            {selectedIds.size > 0 && (
+              <HapticPressable
+                onPress={handleDelete}
+                style={styles.editToolbarDelete}
               >
-                {deleteLabel}
-              </StyledText>
-            </HapticPressable>
-
-            {/* Done (right) */}
-            <HapticPressable onPress={handleEditToggle}>
-              <StyledText style={[styles.toolbarLabel, { color: textColor }]}>
-                DONE
-              </StyledText>
-            </HapticPressable>
-          </>
+                <StyledText style={[styles.toolbarLabel, { color: textColor }]}>
+                  DELETE
+                </StyledText>
+              </HapticPressable>
+            )}
+          </View>
         ) : (
           <>
             {/* Settings (left) */}
@@ -284,6 +278,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: n(11),
     paddingHorizontal: n(26),
+  },
+  editToolbar: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  editToolbarDelete: {
+    position: "absolute",
+    right: 0,
   },
   toolbarLabel: {
     fontFamily: "PublicSans-Regular",

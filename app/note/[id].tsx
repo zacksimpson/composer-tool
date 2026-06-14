@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Keyboard, StyleSheet, View } from "react-native";
+import { Animated, Keyboard, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { WebViewMessageEvent } from "react-native-webview";
 import WebView from "react-native-webview";
@@ -12,11 +12,13 @@ import { SwipeBackContainer } from "@/components/SwipeBackContainer";
 import { Toast } from "@/components/Toast";
 import { useComposer } from "@/contexts/ComposerContext";
 import { useInvertColors } from "@/contexts/InvertColorsContext";
+import { scrollIndicatorBaseStyles } from "@/hooks/useScrollIndicator";
 import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
 import { getDisplayTitle } from "@/utils/stripMarkdown";
 
 const PERSIST_DEBOUNCE_MS = 600;
+const HEADING_ONLY_RE = /^#{1,3}$/;
 
 export default function NoteEditorScreen() {
   const { id, autoFocus, toast } = useLocalSearchParams<{
@@ -35,6 +37,10 @@ export default function NoteEditorScreen() {
   const [body, setBody] = useState(note?.body ?? "");
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [editorScrollHeight, setEditorScrollHeight] = useState(0);
+  const [editorClientHeight, setEditorClientHeight] = useState(0);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   const webViewRef = useRef<WebView>(null);
   const persistDebounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -49,6 +55,21 @@ export default function NoteEditorScreen() {
   deleteNoteRef.current = deleteNote;
   const noteTitleRef = useRef(note?.title ?? null);
   noteTitleRef.current = note?.title ?? null;
+
+  const needsIndicator = editorScrollHeight > editorClientHeight;
+  const scrollIndicatorHeight = needsIndicator
+    ? Math.max(
+        (editorClientHeight * editorClientHeight) / editorScrollHeight,
+        n(20)
+      )
+    : 0;
+  const scrollIndicatorPosition = needsIndicator
+    ? scrollY.interpolate({
+        inputRange: [0, editorScrollHeight - editorClientHeight],
+        outputRange: [0, editorClientHeight - scrollIndicatorHeight],
+        extrapolate: "clamp",
+      })
+    : scrollY;
 
   // Stamp initial content and theme into the HTML once on mount.
   // Replacing string literals in the bundle avoids an async init roundtrip —
@@ -69,8 +90,10 @@ export default function NoteEditorScreen() {
         clearTimeout(persistDebounceRef.current);
       }
       if (idRef.current) {
+        const trimmed = bodyRef.current.trim();
         const isEmpty =
-          bodyRef.current.trim() === "" && noteTitleRef.current === null;
+          (trimmed === "" || HEADING_ONLY_RE.test(trimmed)) &&
+          noteTitleRef.current === null;
         const bodyChanged = bodyRef.current !== initialBodyRef.current;
         if (isEmpty) {
           deleteNoteRef.current(idRef.current);
@@ -96,11 +119,13 @@ export default function NoteEditorScreen() {
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", (e) => {
       const h = Math.round(e.endCoordinates.height);
+      setKeyboardVisible(true);
       webViewRef.current?.injectJavaScript(
         `window.composerBridge?.setKeyboardHeight(${h}); true;`
       );
     });
     const hide = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardVisible(false);
       webViewRef.current?.injectJavaScript(
         "window.composerBridge?.setKeyboardHeight(0); true;"
       );
@@ -137,6 +162,9 @@ export default function NoteEditorScreen() {
       const data = JSON.parse(event.nativeEvent.data) as {
         type: string;
         markdown?: string;
+        scrollTop?: number;
+        scrollHeight?: number;
+        clientHeight?: number;
       };
       if (data.type === "change" && data.markdown !== undefined) {
         const { markdown } = data;
@@ -148,6 +176,10 @@ export default function NoteEditorScreen() {
         persistDebounceRef.current = setTimeout(() => {
           updateNote(id, { body: markdown, updatedAt: Date.now() });
         }, PERSIST_DEBOUNCE_MS);
+      } else if (data.type === "scroll") {
+        scrollY.setValue(data.scrollTop ?? 0);
+        setEditorScrollHeight(data.scrollHeight ?? 0);
+        setEditorClientHeight(data.clientHeight ?? 0);
       }
     } catch {
       // non-JSON WebView message — ignore
@@ -215,22 +247,38 @@ export default function NoteEditorScreen() {
           </HapticPressable>
         </View>
 
-        {/* Editor */}
-        <WebView
-          backgroundColor={bg}
-          onError={(e) =>
-            console.warn("[Editor] WebView error:", e.nativeEvent.description)
-          }
-          onLoad={handleWebViewLoad}
-          onMessage={handleMessage}
-          originWhitelist={["*"]}
-          overScrollMode="never"
-          ref={webViewRef}
-          scrollEnabled
-          showsVerticalScrollIndicator={false}
-          source={{ html: editorHtml }}
-          style={[styles.webView, { backgroundColor: bg }]}
-        />
+        {/* Editor + scroll indicator */}
+        <View style={styles.editorContainer}>
+          <WebView
+            backgroundColor={bg}
+            onError={(e) =>
+              console.warn("[Editor] WebView error:", e.nativeEvent.description)
+            }
+            onLoad={handleWebViewLoad}
+            onMessage={handleMessage}
+            originWhitelist={["*"]}
+            overScrollMode="never"
+            ref={webViewRef}
+            scrollEnabled
+            showsVerticalScrollIndicator={false}
+            source={{ html: editorHtml }}
+            style={[styles.webView, { backgroundColor: bg }]}
+          />
+          {scrollIndicatorHeight > 0 && !keyboardVisible && (
+            <View style={[styles.scrollTrack, { backgroundColor: textColor }]}>
+              <Animated.View
+                style={[
+                  styles.scrollThumb,
+                  {
+                    backgroundColor: textColor,
+                    height: scrollIndicatorHeight,
+                    transform: [{ translateY: scrollIndicatorPosition }],
+                  },
+                ]}
+              />
+            </View>
+          )}
+        </View>
       </SafeAreaView>
 
       <Toast
@@ -249,7 +297,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: n(22),
-    paddingVertical: n(5),
+    paddingTop: n(5),
+    paddingBottom: n(20),
     zIndex: 1,
   },
   headerBtn: {
@@ -262,13 +311,14 @@ const styles = StyleSheet.create({
   titlePressable: {
     flex: 1,
     alignItems: "center",
-    paddingHorizontal: n(8),
+    paddingHorizontal: n(28),
   },
   titleText: {
     fontSize: n(20),
     paddingTop: n(2),
   },
-  webView: {
-    flex: 1,
-  },
+  editorContainer: { flex: 1 },
+  webView: { flex: 1 },
+  scrollTrack: scrollIndicatorBaseStyles.track,
+  scrollThumb: scrollIndicatorBaseStyles.thumb,
 });

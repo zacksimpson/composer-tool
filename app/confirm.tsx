@@ -10,7 +10,7 @@ import { n } from "@/utils/scaling";
 
 export default function ConfirmScreen() {
   const { invertColors } = useInvertColors();
-  const { deleteNote } = useComposer();
+  const { deleteNote, deleteNotes } = useComposer();
   const params = useLocalSearchParams<{
     title: string;
     message: string;
@@ -24,7 +24,10 @@ export default function ConfirmScreen() {
 
   const handleConfirm = () => {
     // Execute the action before navigating
-    if (params.action?.startsWith("delete-note:")) {
+    if (params.action?.startsWith("delete-notes:")) {
+      const ids = params.action.replace("delete-notes:", "").split(",");
+      deleteNotes(ids);
+    } else if (params.action?.startsWith("delete-note:")) {
       const noteId = params.action.replace("delete-note:", "");
       deleteNote(noteId);
     }

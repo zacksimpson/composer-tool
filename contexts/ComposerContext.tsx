@@ -18,15 +18,33 @@ export interface Note {
   updatedAt: number;
 }
 
+export type NewNoteFormat = "h1" | "h2" | "h3" | "body";
+
+export interface ComposerSettings {
+  newNoteFormat: NewNoteFormat;
+}
+
+const DEFAULT_SETTINGS: ComposerSettings = {
+  newNoteFormat: "body",
+};
+
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
 
 const NOTES_KEY = "composer:notes";
+const SETTINGS_KEY = "composer:settings";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
+
+const FORMAT_PREFIX: Record<NewNoteFormat, string> = {
+  h1: "# ",
+  h2: "## ",
+  h3: "### ",
+  body: "",
+};
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
@@ -37,10 +55,12 @@ interface ComposerContextType {
   loaded: boolean;
   notes: Note[];
   renameNote: (id: string, title: string | null) => void;
+  settings: ComposerSettings;
   updateNote: (
     id: string,
     updates: Partial<Omit<Note, "id" | "createdAt">>
   ) => void;
+  updateSettings: (updates: Partial<ComposerSettings>) => void;
 }
 
 const ComposerContext = createContext<ComposerContextType | null>(null);
@@ -57,13 +77,24 @@ export const useComposer = () => {
 
 export function ComposerProvider({ children }: { children: ReactNode }) {
   const [notes, setNotes] = useState<Note[]>([]);
+  const [settings, setSettings] = useState<ComposerSettings>(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem(NOTES_KEY).then((raw) => {
-      if (raw) {
+    Promise.all([
+      AsyncStorage.getItem(NOTES_KEY),
+      AsyncStorage.getItem(SETTINGS_KEY),
+    ]).then(([rawNotes, rawSettings]) => {
+      if (rawNotes) {
         try {
-          setNotes(JSON.parse(raw));
+          setNotes(JSON.parse(rawNotes));
+        } catch {
+          /* ignore corrupt data */
+        }
+      }
+      if (rawSettings) {
+        try {
+          setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(rawSettings) });
         } catch {
           /* ignore corrupt data */
         }
@@ -83,13 +114,13 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     const newNote: Note = {
       id,
       title: null,
-      body: "",
+      body: FORMAT_PREFIX[settings.newNoteFormat],
       createdAt: now,
       updatedAt: now,
     };
     persistNotes([newNote, ...notes]);
     return id;
-  }, [notes, persistNotes]);
+  }, [notes, settings.newNoteFormat, persistNotes]);
 
   const updateNote = useCallback(
     (id: string, updates: Partial<Omit<Note, "id" | "createdAt">>) => {
@@ -124,16 +155,27 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     [notes, persistNotes]
   );
 
+  const updateSettings = useCallback(
+    async (updates: Partial<ComposerSettings>) => {
+      const next = { ...settings, ...updates };
+      setSettings(next);
+      await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
+    },
+    [settings]
+  );
+
   return (
     <ComposerContext.Provider
       value={{
         notes,
         loaded,
+        settings,
         addNote,
         updateNote,
         renameNote,
         deleteNote,
         deleteNotes,
+        updateSettings,
       }}
     >
       {children}

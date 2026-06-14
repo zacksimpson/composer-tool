@@ -88,6 +88,40 @@ async function main() {
     });
     observer.observe(pm, { childList: true, subtree: true, characterData: true });
   }
+
+  // Post initial dimensions after first paint so the indicator appears immediately
+  requestAnimationFrame(() => {
+    window.ReactNativeWebView?.postMessage(
+      JSON.stringify({
+        type: "scroll",
+        scrollTop: 0,
+        scrollHeight: document.documentElement.scrollHeight,
+        clientHeight: document.documentElement.clientHeight,
+      })
+    );
+  });
+
+  // Post scroll metrics to RN so it can render a matching scroll indicator
+  let rafPending = false;
+  document.addEventListener(
+    "scroll",
+    () => {
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => {
+        rafPending = false;
+        window.ReactNativeWebView?.postMessage(
+          JSON.stringify({
+            type: "scroll",
+            scrollTop: Math.round(window.scrollY),
+            scrollHeight: document.documentElement.scrollHeight,
+            clientHeight: document.documentElement.clientHeight,
+          })
+        );
+      });
+    },
+    { passive: true }
+  );
 }
 
 main();
