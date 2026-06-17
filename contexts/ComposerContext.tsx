@@ -19,13 +19,16 @@ export interface Note {
 }
 
 export type NewNoteFormat = "h1" | "h2" | "h3" | "body";
+export type NoteSortOrder = "edited" | "created";
 
 export interface ComposerSettings {
   newNoteFormat: NewNoteFormat;
+  sortOrder: NoteSortOrder;
 }
 
 const DEFAULT_SETTINGS: ComposerSettings = {
   newNoteFormat: "body",
+  sortOrder: "edited",
 };
 
 // ─── Storage Keys ─────────────────────────────────────────────────────────────

@@ -29,7 +29,7 @@ function formatDate(ts: number): string {
 
 export default function NotesListScreen() {
   const { invertColors } = useInvertColors();
-  const { notes, addNote } = useComposer();
+  const { notes, addNote, settings } = useComposer();
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
 
@@ -60,7 +60,8 @@ export default function NotesListScreen() {
     setScrollViewHeight,
   } = useScrollIndicator();
 
-  const sorted = [...notes].sort((a, b) => b.updatedAt - a.updatedAt);
+  const sortKey = settings.sortOrder === "created" ? "createdAt" : "updatedAt";
+  const sorted = [...notes].sort((a, b) => b[sortKey] - a[sortKey]);
 
   const handleNewNote = () => {
     const id = addNote();
@@ -161,7 +162,7 @@ export default function NotesListScreen() {
                         style={styles.editIcon}
                       />
                       <StyledText style={styles.noteDate}>
-                        {formatDate(note.updatedAt)}
+                        {formatDate(note[sortKey])}
                       </StyledText>
                     </View>
                   </View>
