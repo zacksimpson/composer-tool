@@ -59,6 +59,11 @@ function withAndroidThemeStyles(config) {
       setItem("colorAccent", "@color/colorAccent");
       setItem("colorControlActivated", "@color/colorAccent");
       setItem("colorControlHighlight", "@color/colorAccent");
+      // Override WebView text selection handles with white drawables.
+      // colorAccent alone does not tint WebView handles — these theme attrs do.
+      setItem("android:textSelectHandle", "@drawable/text_select_handle_middle");
+      setItem("android:textSelectHandleLeft", "@drawable/text_select_handle_left");
+      setItem("android:textSelectHandleRight", "@drawable/text_select_handle_right");
     }
 
     const splashTheme = styles.find(
@@ -123,6 +128,48 @@ function withSplashDrawable(config) {
 </layer-list>
 `;
 
+      // White cursor handle (single teardrop centered under cursor)
+      const handleMiddle = `<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="29dp"
+    android:viewportWidth="22"
+    android:viewportHeight="29">
+  <path android:fillColor="#FFFFFF"
+      android:pathData="M11,1 C5.477,1 1,5.477 1,11 C1,16.523 5.477,21 11,21 C16.523,21 21,16.523 21,11 C21,5.477 16.523,1 11,1Z"/>
+  <path android:fillColor="#FFFFFF"
+      android:pathData="M9,20.5 L11,28.5 L13,20.5Z"/>
+</vector>
+`;
+
+      // White left selection handle (stem points bottom-left, circle on right)
+      const handleLeft = `<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="29dp"
+    android:viewportWidth="22"
+    android:viewportHeight="29">
+  <path android:fillColor="#FFFFFF"
+      android:pathData="M11,1 C5.477,1 1,5.477 1,11 C1,16.523 5.477,21 11,21 C16.523,21 21,16.523 21,11 C21,5.477 16.523,1 11,1Z"/>
+  <path android:fillColor="#FFFFFF"
+      android:pathData="M1,21 L1,28.5 L9,21Z"/>
+</vector>
+`;
+
+      // White right selection handle (stem points bottom-right, circle on left)
+      const handleRight = `<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="29dp"
+    android:viewportWidth="22"
+    android:viewportHeight="29">
+  <path android:fillColor="#FFFFFF"
+      android:pathData="M11,1 C5.477,1 1,5.477 1,11 C1,16.523 5.477,21 11,21 C16.523,21 21,16.523 21,11 C21,5.477 16.523,1 11,1Z"/>
+  <path android:fillColor="#FFFFFF"
+      android:pathData="M21,21 L21,28.5 L13,21Z"/>
+</vector>
+`;
+
       writeFileSync(
         resolve(drawablePath, "ic_launcher_background.xml"),
         launcherBg
@@ -130,6 +177,18 @@ function withSplashDrawable(config) {
       writeFileSync(
         resolve(drawablePath, "transparent_splash_icon.xml"),
         transparentIcon
+      );
+      writeFileSync(
+        resolve(drawablePath, "text_select_handle_middle.xml"),
+        handleMiddle
+      );
+      writeFileSync(
+        resolve(drawablePath, "text_select_handle_left.xml"),
+        handleLeft
+      );
+      writeFileSync(
+        resolve(drawablePath, "text_select_handle_right.xml"),
+        handleRight
       );
 
       return config;
