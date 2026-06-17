@@ -19,11 +19,13 @@ expo-env.d.ts
 *.mobileprovision
 
 # Android
-android/build/
-android/app/build/
-android/.gradle/
-android/local.properties
-android/gradle.properties.bak
+android/
+androidApp/
+.gradle/
+.idea/
+gradle/
+local.properties
+package-lock.json
 *.apk
 *.aab
 

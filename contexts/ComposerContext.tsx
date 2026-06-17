@@ -13,9 +13,16 @@ import {
 export interface Note {
   body: string;
   createdAt: number;
+  folderId: string | null;
   id: string;
   title: string | null; // null = derive display title from first line of body
   updatedAt: number;
+}
+
+export interface Folder {
+  id: string;
+  name: string;
+  order: number;
 }
 
 export type NewNoteFormat = "h1" | "h2" | "h3" | "body";
@@ -34,6 +41,7 @@ const DEFAULT_SETTINGS: ComposerSettings = {
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
 
 const NOTES_KEY = "composer:notes";
+const FOLDERS_KEY = "composer:folders";
 const SETTINGS_KEY = "composer:settings";
 
 // ─── Welcome Note ─────────────────────────────────────────────────────────────
@@ -47,7 +55,7 @@ const WELCOME_NOTE_BODY = [
   "",
   "*italic* — `*italic*`",
   "",
-  " ",
+  " ",
   "",
   "# Heading 1 — `# text`",
   "",
@@ -55,21 +63,21 @@ const WELCOME_NOTE_BODY = [
   "",
   "### Heading 3 — `### text`",
   "",
-  " ",
+  " ",
   "",
   "- List item — `- text`",
   "- Another item",
   "",
-  " ",
+  " ",
   "",
   "1. First item — `1. text`",
   "2. Second item",
   "",
-  " ",
+  " ",
   "",
   "`inline code` — wrap with backticks",
   "",
-  " ",
+  " ",
   "",
   "> Blockquote — `> text`",
 ].join("\n");
@@ -90,11 +98,19 @@ const FORMAT_PREFIX: Record<NewNoteFormat, string> = {
 // ─── Context ──────────────────────────────────────────────────────────────────
 
 interface ComposerContextType {
-  addNote: () => string;
+  addFolder: (name: string) => void;
+  addNote: (folderId?: string | null) => string;
+  deleteFolder: (id: string) => void;
+  moveFolderDown: (id: string) => void;
+  moveFolderUp: (id: string) => void;
   deleteNote: (id: string) => void;
   deleteNotes: (ids: string[]) => void;
+  folders: Folder[];
   loaded: boolean;
+  moveNotesToFolder: (noteIds: string[], folderId: string | null) => void;
   notes: Note[];
+  reorderFolders: (orderedIds: string[]) => void;
+  renameFolder: (id: string, name: string) => void;
   renameNote: (id: string, title: string | null) => void;
   settings: ComposerSettings;
   updateNote: (
@@ -118,17 +134,21 @@ export const useComposer = () => {
 
 export function ComposerProvider({ children }: { children: ReactNode }) {
   const [notes, setNotes] = useState<Note[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
   const [settings, setSettings] = useState<ComposerSettings>(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     Promise.all([
       AsyncStorage.getItem(NOTES_KEY),
+      AsyncStorage.getItem(FOLDERS_KEY),
       AsyncStorage.getItem(SETTINGS_KEY),
-    ]).then(([rawNotes, rawSettings]) => {
+    ]).then(([rawNotes, rawFolders, rawSettings]) => {
       if (rawNotes) {
         try {
-          setNotes(JSON.parse(rawNotes));
+          const parsed: Note[] = JSON.parse(rawNotes);
+          // Migrate notes that don't have folderId yet
+          setNotes(parsed.map((n) => ({ ...n, folderId: n.folderId ?? null })));
         } catch {
           /* ignore corrupt data */
         }
@@ -138,11 +158,19 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
           id: generateId(),
           title: null,
           body: WELCOME_NOTE_BODY,
+          folderId: null,
           createdAt: now,
           updatedAt: now,
         };
         setNotes([welcomeNote]);
         AsyncStorage.setItem(NOTES_KEY, JSON.stringify([welcomeNote]));
+      }
+      if (rawFolders) {
+        try {
+          setFolders(JSON.parse(rawFolders));
+        } catch {
+          /* ignore corrupt data */
+        }
       }
       if (rawSettings) {
         try {
@@ -160,19 +188,28 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     await AsyncStorage.setItem(NOTES_KEY, JSON.stringify(next));
   }, []);
 
-  const addNote = useCallback((): string => {
-    const id = generateId();
-    const now = Date.now();
-    const newNote: Note = {
-      id,
-      title: null,
-      body: FORMAT_PREFIX[settings.newNoteFormat],
-      createdAt: now,
-      updatedAt: now,
-    };
-    persistNotes([newNote, ...notes]);
-    return id;
-  }, [notes, settings.newNoteFormat, persistNotes]);
+  const persistFolders = useCallback(async (next: Folder[]) => {
+    setFolders(next);
+    await AsyncStorage.setItem(FOLDERS_KEY, JSON.stringify(next));
+  }, []);
+
+  const addNote = useCallback(
+    (folderId: string | null = null): string => {
+      const id = generateId();
+      const now = Date.now();
+      const newNote: Note = {
+        id,
+        title: null,
+        body: FORMAT_PREFIX[settings.newNoteFormat],
+        folderId,
+        createdAt: now,
+        updatedAt: now,
+      };
+      persistNotes([newNote, ...notes]);
+      return id;
+    },
+    [notes, settings.newNoteFormat, persistNotes]
+  );
 
   const updateNote = useCallback(
     (id: string, updates: Partial<Omit<Note, "id" | "createdAt">>) => {
@@ -207,6 +244,92 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     [notes, persistNotes]
   );
 
+  const moveNotesToFolder = useCallback(
+    (noteIds: string[], folderId: string | null) => {
+      const idSet = new Set(noteIds);
+      persistNotes(
+        notes.map((n) => (idSet.has(n.id) ? { ...n, folderId } : n))
+      );
+    },
+    [notes, persistNotes]
+  );
+
+  const addFolder = useCallback(
+    (name: string) => {
+      const newFolder: Folder = {
+        id: generateId(),
+        name: name.trim(),
+        order: folders.length,
+      };
+      persistFolders([...folders, newFolder]);
+    },
+    [folders, persistFolders]
+  );
+
+  const renameFolder = useCallback(
+    (id: string, name: string) => {
+      persistFolders(
+        folders.map((f) => (f.id === id ? { ...f, name: name.trim() } : f))
+      );
+    },
+    [folders, persistFolders]
+  );
+
+  const deleteFolder = useCallback(
+    (id: string) => {
+      // Remove folder and un-assign notes in it
+      persistFolders(folders.filter((f) => f.id !== id));
+      persistNotes(
+        notes.map((n) => (n.folderId === id ? { ...n, folderId: null } : n))
+      );
+    },
+    [folders, notes, persistFolders, persistNotes]
+  );
+
+  const moveFolderUp = useCallback(
+    (id: string) => {
+      const sorted = [...folders].sort((a, b) => a.order - b.order);
+      const idx = sorted.findIndex((f) => f.id === id);
+      if (idx <= 0) return;
+      const next = sorted.map((f, i) => {
+        if (i === idx - 1) return { ...f, order: sorted[idx].order };
+        if (i === idx) return { ...f, order: sorted[idx - 1].order };
+        return f;
+      });
+      persistFolders(next);
+    },
+    [folders, persistFolders]
+  );
+
+  const moveFolderDown = useCallback(
+    (id: string) => {
+      const sorted = [...folders].sort((a, b) => a.order - b.order);
+      const idx = sorted.findIndex((f) => f.id === id);
+      if (idx < 0 || idx >= sorted.length - 1) return;
+      const next = sorted.map((f, i) => {
+        if (i === idx) return { ...f, order: sorted[idx + 1].order };
+        if (i === idx + 1) return { ...f, order: sorted[idx].order };
+        return f;
+      });
+      persistFolders(next);
+    },
+    [folders, persistFolders]
+  );
+
+  const reorderFolders = useCallback(
+    (orderedIds: string[]) => {
+      const folderMap = new Map(folders.map((f) => [f.id, f]));
+      const reordered = orderedIds
+        .map((id, i) => {
+          const f = folderMap.get(id);
+          return f ? { ...f, order: i } : null;
+        })
+        .filter(Boolean) as Folder[];
+      persistFolders(reordered);
+    },
+    [folders, persistFolders]
+  );
+
   const updateSettings = useCallback(
     async (updates: Partial<ComposerSettings>) => {
       const next = { ...settings, ...updates };
@@ -220,6 +343,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     <ComposerContext.Provider
       value={{
         notes,
+        folders,
         loaded,
         settings,
         addNote,
@@ -227,6 +351,13 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
         renameNote,
         deleteNote,
         deleteNotes,
+        moveNotesToFolder,
+        addFolder,
+        renameFolder,
+        deleteFolder,
+        moveFolderUp,
+        moveFolderDown,
+        reorderFolders,
         updateSettings,
       }}
     >

@@ -10,7 +10,7 @@ import { n } from "@/utils/scaling";
 
 export default function ConfirmScreen() {
   const { invertColors } = useInvertColors();
-  const { deleteNote, deleteNotes } = useComposer();
+  const { deleteNote, deleteNotes, deleteFolder } = useComposer();
   const params = useLocalSearchParams<{
     title: string;
     message: string;
@@ -30,6 +30,9 @@ export default function ConfirmScreen() {
     } else if (params.action?.startsWith("delete-note:")) {
       const noteId = params.action.replace("delete-note:", "");
       deleteNote(noteId);
+    } else if (params.action?.startsWith("delete-folder:")) {
+      const folderId = params.action.replace("delete-folder:", "");
+      deleteFolder(folderId);
     }
 
     const path = params.returnPath || "/";
