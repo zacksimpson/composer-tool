@@ -56,7 +56,7 @@ export function SwipeBackContainer({
 
   return (
     <GestureDetector gesture={swipeBackGesture}>
-      <View style={styles.container}>{children}</View>
+      <View pointerEvents="box-none" style={styles.container}>{children}</View>
     </GestureDetector>
   );
 }
