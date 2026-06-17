@@ -27,6 +27,11 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+::selection {
+  background-color: COMPOSER_TEXT;
+  color: COMPOSER_BG;
+}
+
 #app {
   padding: 10px 36px 400px 22px;
 }
