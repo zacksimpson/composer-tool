@@ -1,4 +1,5 @@
-import { Stack, usePathname } from "expo-router";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router, Stack, usePathname } from "expo-router";
 import { hideAsync, preventAutoHideAsync } from "expo-splash-screen";
 import { useEffect, useMemo, useRef } from "react";
 import { Animated, StatusBar, StyleSheet, View } from "react-native";
@@ -6,6 +7,8 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-g
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
 import { MILKDOWN_EDITOR_HTML } from "@/assets/milkdown-editor";
+import { HapticPressable } from "@/components/HapticPressable";
+import { StyledText } from "@/components/StyledText";
 import { ComposerProvider, useComposer } from "@/contexts/ComposerContext";
 import { EditorProvider, useEditor } from "@/contexts/EditorContext";
 import {
@@ -16,6 +19,7 @@ import { scrollIndicatorBaseStyles } from "@/hooks/useScrollIndicator";
 import { triggerHaptic } from "@/utils/haptics";
 import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
+import { getDisplayTitle } from "@/utils/stripMarkdown";
 
 preventAutoHideAsync();
 
@@ -27,6 +31,8 @@ function RootLayout() {
   const {
     webViewRef,
     handleMessage,
+    activeNote,
+    body,
     keyboardVisible,
     scrollIndicatorHeight,
     scrollIndicatorPosition,
@@ -148,6 +154,51 @@ function RootLayout() {
           style={[StyleSheet.absoluteFillObject, { width: n(30) }]}
         />
       </GestureDetector>
+
+      {/* Note editor header — lives here (not in note/[id].tsx) so it disappears in the
+          same render pass as the WebView when navigating away, eliminating the JS-timing
+          flicker that plagued the useIsFocused approach in release builds. */}
+      {isNoteScreen && (
+        <View
+          style={[
+            styles.noteHeader,
+            { top: insets.top, backgroundColor: bg },
+          ]}
+        >
+          <HapticPressable
+            onPress={() => { dismissKeyboard(); goBack(); }}
+          >
+            <View style={styles.headerBtn}>
+              <MaterialIcons color={textColor} name="arrow-back-ios" size={n(28)} />
+            </View>
+          </HapticPressable>
+
+          <HapticPressable
+            onPress={() => activeNote && router.push({ pathname: "/note-rename/[id]", params: { id: activeNote.id } })}
+            style={styles.titlePressable}
+          >
+            <StyledText numberOfLines={1} style={styles.titleText}>
+              {activeNote ? getDisplayTitle(activeNote.title, body) : ""}
+            </StyledText>
+          </HapticPressable>
+
+          {keyboardVisible ? (
+            <HapticPressable onPress={dismissKeyboard}>
+              <View style={styles.headerBtn}>
+                <MaterialIcons color={textColor} name="keyboard-arrow-down" size={n(28)} />
+              </View>
+            </HapticPressable>
+          ) : (
+            <HapticPressable
+              onPress={() => activeNote && router.push({ pathname: "/note-actions/[id]", params: { id: activeNote.id } })}
+            >
+              <View style={styles.headerBtn}>
+                <MaterialIcons color={textColor} name="menu" size={n(28)} />
+              </View>
+            </HapticPressable>
+          )}
+        </View>
+      )}
     </View>
   );
 }
@@ -185,4 +236,32 @@ export default function App() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  noteHeader: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    height: HEADER_HEIGHT,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: n(22),
+    paddingTop: n(5),
+    paddingBottom: n(20),
+  },
+  headerBtn: {
+    width: n(32),
+    height: n(32),
+    alignItems: "center",
+    paddingTop: n(6),
+    paddingRight: n(4),
+  },
+  titlePressable: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: n(28),
+  },
+  titleText: {
+    fontSize: n(20),
+    paddingTop: n(2),
+  },
 });
