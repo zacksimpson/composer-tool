@@ -20,8 +20,9 @@ function withAndroidThemeColors(config) {
     };
 
     setColor("splashscreen_background", "#000000");
-    setColor("colorPrimary", "#023c69");
+    setColor("colorPrimary", "#ffffff");
     setColor("colorPrimaryDark", "#ffffff");
+    setColor("colorAccent", "#ffffff");
     setColor("activityBackground", "#000000");
 
     config.modResults.resources.color = colors;
