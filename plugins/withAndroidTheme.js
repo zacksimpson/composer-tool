@@ -57,6 +57,8 @@ function withAndroidThemeStyles(config) {
       // the Android system uses white for cursor handles, tinted widgets, etc.
       setItem("colorPrimary", "@color/colorPrimary");
       setItem("colorAccent", "@color/colorAccent");
+      setItem("colorControlActivated", "@color/colorAccent");
+      setItem("colorControlHighlight", "@color/colorAccent");
     }
 
     const splashTheme = styles.find(

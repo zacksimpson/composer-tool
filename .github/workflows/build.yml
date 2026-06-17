@@ -48,7 +48,7 @@ jobs:
           fi
 
       - name: Build on EAS cloud
-        run: eas build --platform android --profile ${{ env.EAS_PROFILE }} --wait --non-interactive
+        run: eas build --platform android --profile ${{ env.EAS_PROFILE }} --wait --non-interactive --clear-cache
 
       - name: Download APK from EAS
         run: |
