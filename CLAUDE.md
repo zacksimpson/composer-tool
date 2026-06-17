@@ -60,7 +60,7 @@ interface Note {
 ```
 
 Notes stored in AsyncStorage as `composer:notes` (JSON array).
-Notes sorted by `updatedAt` descending (most recently edited first).
+Notes sorted by `updatedAt` or `createdAt` descending based on `settings.sortOrder` ("edited" | "created").
 
 ---
 

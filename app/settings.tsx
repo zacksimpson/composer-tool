@@ -18,6 +18,11 @@ const NEW_NOTE_FORMAT_LABELS: Record<string, string> = {
   body: "Body",
 };
 
+const SORT_ORDER_LABELS: Record<string, string> = {
+  edited: "Date Edited",
+  created: "Date Created",
+};
+
 export default function SettingsScreen() {
   const { invertColors, setInvertColors } = useInvertColors();
   const { settings } = useComposer();
@@ -57,6 +62,19 @@ export default function SettingsScreen() {
             </StyledText>
             <StyledText style={[styles.rowValue, { color: textColor }]}>
               {NEW_NOTE_FORMAT_LABELS[settings.newNoteFormat] ?? "Body"}
+            </StyledText>
+          </HapticPressable>
+
+          {/* Sort Notes By */}
+          <HapticPressable
+            onPress={() => router.push("/settings/sort-order")}
+            style={styles.row}
+          >
+            <StyledText style={[styles.rowLabel, { color: textColor }]}>
+              Sort Notes By
+            </StyledText>
+            <StyledText style={[styles.rowValue, { color: textColor }]}>
+              {SORT_ORDER_LABELS[settings.sortOrder] ?? "Date Edited"}
             </StyledText>
           </HapticPressable>
 
