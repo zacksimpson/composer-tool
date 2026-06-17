@@ -53,6 +53,10 @@ function withAndroidThemeStyles(config) {
       });
       setItem("android:statusBarColor", "#ffffff");
       setItem("android:windowBackground", "@color/activityBackground");
+      // Explicitly set these as theme attributes (not just color resources) so
+      // the Android system uses white for cursor handles, tinted widgets, etc.
+      setItem("colorPrimary", "@color/colorPrimary");
+      setItem("colorAccent", "@color/colorAccent");
     }
 
     const splashTheme = styles.find(
