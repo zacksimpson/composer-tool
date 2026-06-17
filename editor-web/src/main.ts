@@ -42,6 +42,11 @@ async function main() {
     .use(listener)
     .create();
 
+  // ProseMirror sets spellcheck=false by default to avoid underline conflicts with its
+  // DOM model — override it so Android's IME autocorrect/suggestions work normally.
+  const pmEl = document.querySelector<HTMLElement>(".ProseMirror");
+  if (pmEl) pmEl.spellcheck = true;
+
   // Signal that Milkdown is initialized and ready to receive content
   window.ReactNativeWebView?.postMessage(JSON.stringify({ type: "editorReady" }));
 

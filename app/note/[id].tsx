@@ -1,4 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { useIsFocused } from "@react-navigation/native";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
@@ -25,6 +26,7 @@ export default function NoteEditorScreen() {
   const { notes } = useComposer();
   const { body, keyboardVisible, openNote, closeNote, dismissKeyboard } =
     useEditor();
+  const isFocused = useIsFocused();
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
 
@@ -86,8 +88,8 @@ export default function NoteEditorScreen() {
         pointerEvents="box-none"
         style={[styles.container, { backgroundColor: "transparent" }]}
       >
-        {/* Header — explicitly opaque so it covers the pre-warmed WebView below */}
-        <View style={[styles.header, { backgroundColor: bg }]}>
+        {/* Header — opaque to cover the pre-warmed WebView; hidden when unfocused to prevent lingering over the incoming screen */}
+        <View style={[styles.header, { backgroundColor: bg, opacity: isFocused ? 1 : 0 }]}>
           <HapticPressable onPress={handleBack}>
             <View style={styles.headerBtn}>
               <MaterialIcons

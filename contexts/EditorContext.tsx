@@ -68,6 +68,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const bodyRef = useRef("");
   const activeNoteRef = useRef<ActiveNote | null>(null);
   const isEditorReadyRef = useRef(false);
+  const hasUserEditedRef = useRef(false);
   const pendingOpenRef = useRef<{ body: string; autoFocus: boolean } | null>(
     null
   );
@@ -146,6 +147,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       setBody(initialBody);
       bodyRef.current = initialBody;
       activeNoteRef.current = note;
+      hasUserEditedRef.current = false;
       scrollY.setValue(0);
       setEditorScrollHeight(0);
       setEditorClientHeight(0);
@@ -178,7 +180,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     } else if (bodyChanged) {
       updateNoteRef.current(note.id, {
         body: bodyRef.current,
-        updatedAt: Date.now(),
+        ...(hasUserEditedRef.current && { updatedAt: Date.now() }),
       });
     }
 
@@ -222,6 +224,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           const { markdown } = data;
           setBody(markdown);
           bodyRef.current = markdown;
+          if (markdown !== activeNoteRef.current?.initialBody) {
+            hasUserEditedRef.current = true;
+          }
           if (persistDebounceRef.current) {
             clearTimeout(persistDebounceRef.current);
           }
@@ -230,7 +235,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
             persistDebounceRef.current = setTimeout(() => {
               updateNoteRef.current(noteId, {
                 body: markdown,
-                updatedAt: Date.now(),
+                ...(hasUserEditedRef.current && { updatedAt: Date.now() }),
               });
             }, PERSIST_DEBOUNCE_MS);
           }

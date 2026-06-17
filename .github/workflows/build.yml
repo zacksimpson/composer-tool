@@ -76,7 +76,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ github.workspace }}/${{ env.APP_NAME }}_${{ env.VERSION }}.apk
-          tag_name: v${{ env.VERSION }}
+          tag_name: ${{ github.ref_name }}
           prerelease: ${{ contains(github.ref_name, 'beta') }}
           body: |
             ## What's Changed

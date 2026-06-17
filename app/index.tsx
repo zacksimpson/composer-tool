@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   noteTitle: {
     fontSize: n(24),
-    letterSpacing: n(1),
+    letterSpacing: n(0.5),
   },
   noteMeta: {
     flexDirection: "row",
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   },
   toolbarLabel: {
     fontFamily: "PublicSans-Regular",
-    fontSize: n(23),
+    fontSize: n(25),
     letterSpacing: n(3),
   },
 });

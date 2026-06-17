@@ -1,8 +1,8 @@
 import { Stack, usePathname } from "expo-router";
 import { hideAsync, preventAutoHideAsync } from "expo-splash-screen";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Animated, StatusBar, StyleSheet, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
 import { MILKDOWN_EDITOR_HTML } from "@/assets/milkdown-editor";
@@ -13,6 +13,8 @@ import {
   useInvertColors,
 } from "@/contexts/InvertColorsContext";
 import { scrollIndicatorBaseStyles } from "@/hooks/useScrollIndicator";
+import { triggerHaptic } from "@/utils/haptics";
+import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
 
 preventAutoHideAsync();
@@ -28,6 +30,7 @@ function RootLayout() {
     keyboardVisible,
     scrollIndicatorHeight,
     scrollIndicatorPosition,
+    dismissKeyboard,
   } = useEditor();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
@@ -44,6 +47,37 @@ function RootLayout() {
       textColor
     )
   ).current;
+
+  // Swipe-back gesture for the note screen — lives here (above the WebView in z-order)
+  // because the WebView intercepts all touches inside the Stack, making SwipeBackContainer
+  // in note/[id].tsx unreachable.
+  const swipeTriggeredRef = useRef(false);
+  const swipeBackGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .enabled(isNoteScreen)
+        .activeOffsetX(12)
+        .onBegin(() => {
+          swipeTriggeredRef.current = false;
+        })
+        .onUpdate((event) => {
+          if (swipeTriggeredRef.current) return;
+          const absX = Math.abs(event.translationX);
+          const absY = Math.abs(event.translationY);
+          if (absY > absX * 1.5) return;
+          if (event.translationX > 80) {
+            swipeTriggeredRef.current = true;
+            triggerHaptic();
+            dismissKeyboard();
+            goBack();
+          }
+        })
+        .onFinalize(() => {
+          swipeTriggeredRef.current = false;
+        })
+        .runOnJS(true),
+    [isNoteScreen, dismissKeyboard]
+  );
 
   // Sync theme changes into the live editor
   useEffect(() => {
@@ -105,6 +139,15 @@ function RootLayout() {
           </View>
         )}
       </View>
+
+      {/* Left-edge swipe-back strip — rendered above the WebView so RNGH can intercept
+          before the WebView consumes the touch. Only active on the note screen. */}
+      <GestureDetector gesture={swipeBackGesture}>
+        <View
+          pointerEvents={isNoteScreen ? "auto" : "none"}
+          style={[StyleSheet.absoluteFillObject, { width: n(30) }]}
+        />
+      </GestureDetector>
     </View>
   );
 }
