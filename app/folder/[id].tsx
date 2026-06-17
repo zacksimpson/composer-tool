@@ -16,6 +16,7 @@ import {
   useScrollIndicator,
 } from "@/hooks/useScrollIndicator";
 import { triggerHaptic } from "@/utils/haptics";
+import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
 import { getDisplayTitle } from "@/utils/stripMarkdown";
 
@@ -28,11 +29,16 @@ function formatDate(ts: number): string {
   });
 }
 
-export default function NotesListScreen() {
+export default function FolderDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { invertColors } = useInvertColors();
-  const { notes, addNote, settings } = useComposer();
+  const { notes, folders, addNote, deleteNotes, moveNotesToFolder, settings } =
+    useComposer();
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
+
+  const folder = folders.find((f) => f.id === id);
+  const folderNotes = notes.filter((n) => n.folderId === id);
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -62,34 +68,31 @@ export default function NotesListScreen() {
   } = useScrollIndicator();
 
   const sortKey = settings.sortOrder === "created" ? "createdAt" : "updatedAt";
-  const sorted = [...notes].sort((a, b) => b[sortKey] - a[sortKey]);
+  const sorted = [...folderNotes].sort((a, b) => b[sortKey] - a[sortKey]);
 
   const handleNewNote = () => {
-    const id = addNote();
-    router.push({ pathname: "/note/[id]", params: { id, autoFocus: "1" } });
+    const noteId = addNote(id);
+    router.push({ pathname: "/note/[id]", params: { id: noteId, autoFocus: "1" } });
   };
 
-  const handleNotePress = (id: string) => {
+  const handleNotePress = (noteId: string) => {
     if (isEditMode) {
       setSelectedIds((prev) => {
         const next = new Set(prev);
-        if (next.has(id)) {
-          next.delete(id);
-        } else {
-          next.add(id);
-        }
+        if (next.has(noteId)) next.delete(noteId);
+        else next.add(noteId);
         return next;
       });
     } else {
-      router.push({ pathname: "/note/[id]", params: { id } });
+      router.push({ pathname: "/note/[id]", params: { id: noteId } });
     }
   };
 
-  const handleNoteLongPress = (id: string) => {
+  const handleNoteLongPress = (noteId: string) => {
     if (!isEditMode) {
       triggerHaptic();
       setIsEditMode(true);
-      setSelectedIds(new Set([id]));
+      setSelectedIds(new Set([noteId]));
     }
   };
 
@@ -107,26 +110,50 @@ export default function NotesListScreen() {
         message: count === 1 ? "Delete this note?" : `Delete ${count} notes?`,
         confirmText: "Delete",
         action: `delete-notes:${ids.join(",")}`,
-        returnPath: "/",
+        returnPath: `/folder/${id}`,
       },
     });
   };
 
-  const handleMove = () => {
-    const ids = Array.from(selectedIds);
-    router.push({
-      pathname: "/folder-pick",
-      params: { noteIds: ids.join(","), returnPath: "/" },
-    });
+  const handleRemove = () => {
+    moveNotesToFolder(Array.from(selectedIds), null);
+    exitEditMode();
   };
+
+  if (!folder) return null;
 
   return (
     <SafeAreaView
       edges={["top"]}
       style={[styles.container, { backgroundColor: bg }]}
     >
-      {/* Top spacing */}
-      <View style={styles.header} />
+      {/* Header */}
+      <View style={styles.header}>
+        <HapticPressable onPress={goBack} style={styles.backBtn}>
+          <MaterialIcons
+            color={textColor}
+            name="arrow-back-ios"
+            size={n(28)}
+          />
+        </HapticPressable>
+        <StyledText
+          numberOfLines={1}
+          style={[styles.headerTitle, { color: textColor }]}
+        >
+          {folder.name}
+        </StyledText>
+        <HapticPressable
+          onPress={() =>
+            router.push({
+              pathname: "/folder-rename/[id]",
+              params: { id },
+            })
+          }
+          style={styles.moreBtn}
+        >
+          <MaterialIcons color={textColor} name="menu" size={n(28)} />
+        </HapticPressable>
+      </View>
 
       {/* Notes list */}
       <View style={styles.scrollWrapper}>
@@ -183,6 +210,11 @@ export default function NotesListScreen() {
                 </HapticPressable>
               );
             })}
+            {sorted.length === 0 && (
+              <StyledText style={[styles.emptyText, { color: textColor }]}>
+                No notes in this folder
+              </StyledText>
+            )}
           </View>
         </Animated.ScrollView>
 
@@ -206,7 +238,7 @@ export default function NotesListScreen() {
       <View style={[styles.toolbar, { backgroundColor: bg }]}>
         {isEditMode ? (
           <View style={styles.editToolbar}>
-            {/* DELETE — left, only when items selected */}
+            {/* DELETE — left */}
             {selectedIds.size > 0 ? (
               <HapticPressable
                 onPress={handleDelete}
@@ -220,19 +252,19 @@ export default function NotesListScreen() {
               <View style={styles.editToolbarLeft} />
             )}
 
-            {/* X — centered */}
+            {/* X — center */}
             <HapticPressable onPress={exitEditMode}>
               <MaterialIcons color={textColor} name="close" size={n(40)} />
             </HapticPressable>
 
-            {/* MOVE — right, only when items selected */}
+            {/* REMOVE — right */}
             {selectedIds.size > 0 ? (
               <HapticPressable
-                onPress={handleMove}
+                onPress={handleRemove}
                 style={styles.editToolbarRight}
               >
                 <StyledText style={[styles.toolbarLabel, { color: textColor }]}>
-                  MOVE
+                  REMOVE
                 </StyledText>
               </HapticPressable>
             ) : (
@@ -241,19 +273,16 @@ export default function NotesListScreen() {
           </View>
         ) : (
           <>
-            {/* Settings (left) */}
             <HapticPressable onPress={() => router.push("/settings")}>
               <SettingsIcon color={textColor} size={40} />
             </HapticPressable>
 
-            {/* Folders (center) */}
-            <HapticPressable onPress={() => router.push("/folders")}>
+            <HapticPressable onPress={() => router.replace("/")}>
               <StyledText style={[styles.toolbarLabel, { color: textColor }]}>
-                FOLDERS
+                NOTES
               </StyledText>
             </HapticPressable>
 
-            {/* New note (right) */}
             <HapticPressable onPress={handleNewNote}>
               <PlusEditIcon color={textColor} size={40} />
             </HapticPressable>
@@ -272,7 +301,27 @@ export default function NotesListScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { height: n(16) },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: n(22),
+    paddingTop: n(8),
+    paddingBottom: n(8),
+  },
+  backBtn: {
+    width: n(36),
+    alignItems: "center",
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: n(24),
+    fontFamily: "PublicSans-Regular",
+    textAlign: "center",
+  },
+  moreBtn: {
+    width: n(36),
+    alignItems: "center",
+  },
   scrollWrapper: { flex: 1, flexDirection: "row", position: "relative" },
   scrollTrack: scrollIndicatorBaseStyles.track,
   scrollThumb: scrollIndicatorBaseStyles.thumb,
@@ -283,26 +332,21 @@ const styles = StyleSheet.create({
     paddingVertical: n(11),
     paddingRight: n(36),
   },
-  checkboxArea: {
-    marginRight: n(12),
-  },
-  noteText: {
-    flex: 1,
-  },
-  noteTitle: {
-    fontSize: n(24),
-    letterSpacing: n(0.5),
-  },
+  checkboxArea: { marginRight: n(12) },
+  noteText: { flex: 1 },
+  noteTitle: { fontSize: n(24), letterSpacing: n(0.5) },
   noteMeta: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: n(2),
   },
-  editIcon: {
-    marginRight: n(5),
-  },
-  noteDate: {
-    fontSize: n(16),
+  editIcon: { marginRight: n(5) },
+  noteDate: { fontSize: n(16) },
+  emptyText: {
+    fontSize: n(20),
+    paddingHorizontal: n(26),
+    paddingTop: n(20),
+    opacity: 0.5,
   },
   toolbar: {
     flexDirection: "row",
@@ -322,7 +366,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   editToolbarRight: {
-    minWidth: n(80),
+    minWidth: n(100),
     alignItems: "flex-end",
   },
   toolbarLabel: {

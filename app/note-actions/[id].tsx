@@ -11,10 +11,11 @@ import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
 import { stripMarkdown } from "@/utils/stripMarkdown";
 
+
 export default function NoteActionsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { invertColors } = useInvertColors();
-  const { notes } = useComposer();
+  const { notes, moveNotesToFolder } = useComposer();
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
 
@@ -35,6 +36,18 @@ export default function NoteActionsScreen() {
   const handleCopyPlainText = async () => {
     await setStringAsync(stripMarkdown(note?.body ?? ""));
     router.dismissTo(`/note/${id}?toast=Copied`);
+  };
+
+  const handleMoveToFolder = () => {
+    router.push({
+      pathname: "/folder-pick",
+      params: { noteIds: id, returnPath: `/note/${id}` },
+    });
+  };
+
+  const handleRemoveFromFolder = () => {
+    moveNotesToFolder([id], null);
+    goBack();
   };
 
   const handleDelete = () => {
@@ -71,6 +84,19 @@ export default function NoteActionsScreen() {
             onPress={handleCopyPlainText}
             textColor={textColor}
           />
+          {note?.folderId ? (
+            <ActionRow
+              label="Remove from Folder"
+              onPress={handleRemoveFromFolder}
+              textColor={textColor}
+            />
+          ) : (
+            <ActionRow
+              label="Move to Folder"
+              onPress={handleMoveToFolder}
+              textColor={textColor}
+            />
+          )}
           <ActionRow
             label="Delete"
             onPress={handleDelete}
