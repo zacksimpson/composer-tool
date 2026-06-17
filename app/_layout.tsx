@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Stack, usePathname } from "expo-router";
 import { hideAsync, preventAutoHideAsync } from "expo-splash-screen";
 import { useEffect, useRef } from "react";
 import { Animated, StatusBar, StyleSheet, View } from "react-native";
@@ -24,13 +24,14 @@ function RootLayout() {
   const { invertColors } = useInvertColors();
   const {
     webViewRef,
-    activeNote,
     handleMessage,
     keyboardVisible,
     scrollIndicatorHeight,
     scrollIndicatorPosition,
   } = useEditor();
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
+  const isNoteScreen = pathname.startsWith("/note/");
 
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
@@ -53,17 +54,29 @@ function RootLayout() {
 
   return (
     <View style={[styles.root, { backgroundColor: bg }]}>
-      {/* Pre-warmed WebView — always mounted, positioned behind the Stack */}
+      {/* Stack renders first (behind the WebView in z-order) */}
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: "none",
+          contentStyle: { backgroundColor: "transparent" },
+        }}
+      />
+
+      {/* Pre-warmed WebView — always mounted, rendered above the Stack so touches
+          reach it directly. Hidden and non-interactive on all non-editor screens. */}
       <View
-        pointerEvents="box-none"
-        style={[StyleSheet.absoluteFillObject, { top: bodyTop }]}
+        pointerEvents={isNoteScreen ? "auto" : "none"}
+        style={[
+          StyleSheet.absoluteFillObject,
+          { top: bodyTop, opacity: isNoteScreen ? 1 : 0 },
+        ]}
       >
         <WebView
           backgroundColor={bg}
           onMessage={handleMessage}
           originWhitelist={["*"]}
           overScrollMode="never"
-          pointerEvents={activeNote ? "auto" : "none"}
           ref={webViewRef}
           scrollEnabled
           showsVerticalScrollIndicator={false}
@@ -92,15 +105,6 @@ function RootLayout() {
           </View>
         )}
       </View>
-
-      {/* Stack renders on top of the WebView; note screen body is transparent */}
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          animation: "none",
-          contentStyle: { backgroundColor: "transparent" },
-        }}
-      />
     </View>
   );
 }

@@ -83,6 +83,7 @@ export default function NoteEditorScreen() {
     <SwipeBackContainer onSwipeBack={handleBack}>
       <SafeAreaView
         edges={["top"]}
+        pointerEvents="box-none"
         style={[styles.container, { backgroundColor: "transparent" }]}
       >
         {/* Header — explicitly opaque so it covers the pre-warmed WebView below */}
