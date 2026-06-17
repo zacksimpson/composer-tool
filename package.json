@@ -1,7 +1,7 @@
 {
   "name": "composer-tool",
   "main": "expo-router/entry",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "scripts": {
     "dev": "adb reverse tcp:8081 tcp:8081 && expo run:android --no-bundler; adb shell am start -n com.zacksimpson.composer.debug/com.zacksimpson.composer.MainActivity; npx expo start",
     "build:editor": "cd editor-web && bun install && bun run build",
