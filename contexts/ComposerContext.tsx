@@ -101,6 +101,8 @@ interface ComposerContextType {
   addFolder: (name: string) => void;
   addNote: (folderId?: string | null) => string;
   deleteFolder: (id: string) => void;
+  moveFolderDown: (id: string) => void;
+  moveFolderUp: (id: string) => void;
   deleteNote: (id: string) => void;
   deleteNotes: (ids: string[]) => void;
   folders: Folder[];
@@ -284,6 +286,36 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     [folders, notes, persistFolders, persistNotes]
   );
 
+  const moveFolderUp = useCallback(
+    (id: string) => {
+      const sorted = [...folders].sort((a, b) => a.order - b.order);
+      const idx = sorted.findIndex((f) => f.id === id);
+      if (idx <= 0) return;
+      const next = sorted.map((f, i) => {
+        if (i === idx - 1) return { ...f, order: sorted[idx].order };
+        if (i === idx) return { ...f, order: sorted[idx - 1].order };
+        return f;
+      });
+      persistFolders(next);
+    },
+    [folders, persistFolders]
+  );
+
+  const moveFolderDown = useCallback(
+    (id: string) => {
+      const sorted = [...folders].sort((a, b) => a.order - b.order);
+      const idx = sorted.findIndex((f) => f.id === id);
+      if (idx < 0 || idx >= sorted.length - 1) return;
+      const next = sorted.map((f, i) => {
+        if (i === idx) return { ...f, order: sorted[idx + 1].order };
+        if (i === idx + 1) return { ...f, order: sorted[idx].order };
+        return f;
+      });
+      persistFolders(next);
+    },
+    [folders, persistFolders]
+  );
+
   const reorderFolders = useCallback(
     (orderedIds: string[]) => {
       const folderMap = new Map(folders.map((f) => [f.id, f]));
@@ -323,6 +355,8 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
         addFolder,
         renameFolder,
         deleteFolder,
+        moveFolderUp,
+        moveFolderDown,
         reorderFolders,
         updateSettings,
       }}
