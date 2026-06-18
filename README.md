@@ -66,4 +66,4 @@ EAS will build the APK in the cloud and provide a download link.
 * [vandamd](https://github.com/vandamd) – [light-template](https://github.com/vandamd/light-template), the community Expo template this app is built on
 * [iamkory](https://www.reddit.com/user/iamkory/) – [LighterOS Figma design toolkit](https://www.figma.com/design/1k2PkAjOSet8f9jjVdhM2L/LighterOS?node-id=65-2018&t=3Qd2sXdySZCzTVtK-1), excellent reference for recreating the LightOS aesthetic
 * [Milkdown](https://milkdown.dev) – WYSIWYG Markdown editor powering the writing experience
-* [The Light Phone](https://www.thelightphone.com) – for building a phone worth making apps for
+* [The Light Phone](https://www.thelightphone.com) – for building a phone worth making apps for, and for the native Notes tool whose design language Composer is directly modeled after
