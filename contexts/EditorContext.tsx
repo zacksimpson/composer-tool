@@ -207,6 +207,26 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     }
   }, [injectContent]);
 
+  const handleChange = useCallback((markdown: string) => {
+    setBody(markdown);
+    bodyRef.current = markdown;
+    if (markdown !== activeNoteRef.current?.initialBody) {
+      hasUserEditedRef.current = true;
+    }
+    if (persistDebounceRef.current) {
+      clearTimeout(persistDebounceRef.current);
+    }
+    const noteId = activeNoteRef.current?.id;
+    if (noteId) {
+      persistDebounceRef.current = setTimeout(() => {
+        updateNoteRef.current(noteId, {
+          body: markdown,
+          ...(hasUserEditedRef.current && { updatedAt: Date.now() }),
+        });
+      }, PERSIST_DEBOUNCE_MS);
+    }
+  }, []);
+
   const handleMessage = useCallback(
     (event: WebViewMessageEvent) => {
       try {
@@ -221,24 +241,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         if (data.type === "editorReady") {
           onEditorReady();
         } else if (data.type === "change" && data.markdown !== undefined) {
-          const { markdown } = data;
-          setBody(markdown);
-          bodyRef.current = markdown;
-          if (markdown !== activeNoteRef.current?.initialBody) {
-            hasUserEditedRef.current = true;
-          }
-          if (persistDebounceRef.current) {
-            clearTimeout(persistDebounceRef.current);
-          }
-          const noteId = activeNoteRef.current?.id;
-          if (noteId) {
-            persistDebounceRef.current = setTimeout(() => {
-              updateNoteRef.current(noteId, {
-                body: markdown,
-                ...(hasUserEditedRef.current && { updatedAt: Date.now() }),
-              });
-            }, PERSIST_DEBOUNCE_MS);
-          }
+          handleChange(data.markdown);
         } else if (data.type === "scroll") {
           scrollY.setValue(data.scrollTop ?? 0);
           setEditorScrollHeight(data.scrollHeight ?? 0);
@@ -248,7 +251,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         // non-JSON WebView message — ignore
       }
     },
-    [onEditorReady, scrollY]
+    [onEditorReady, handleChange, scrollY]
   );
 
   return (
