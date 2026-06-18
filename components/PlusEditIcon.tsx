@@ -6,7 +6,7 @@ interface PlusEditIconProps {
   size?: number;
 }
 
-export function PlusEditIcon({ color, size = 40 }: PlusEditIconProps) {
+export function PlusEditIcon({ color, size = 38 }: PlusEditIconProps) {
   const height = n(size);
   const width = Math.round(n(size) * (86 / 101));
   return (

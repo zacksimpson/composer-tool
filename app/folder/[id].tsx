@@ -305,7 +305,7 @@ export default function FolderDetailScreen() {
               </HapticPressable>
 
               <HapticPressable onPress={handleNewNote}>
-                <PlusEditIcon color={textColor} size={40} />
+                <PlusEditIcon color={textColor} size={38} />
               </HapticPressable>
             </>
           )}

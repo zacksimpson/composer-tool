@@ -187,7 +187,7 @@ export default function FoldersScreen() {
             });
           }}
         >
-          <PlusEditIcon color={textColor} size={40} />
+          <PlusEditIcon color={textColor} size={38} />
         </HapticPressable>
       </View>
     </SafeAreaView>
