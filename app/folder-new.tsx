@@ -41,7 +41,12 @@ export default function FolderNewScreen() {
         <KeyboardAvoidingView behavior="padding" style={styles.fill}>
           <SafeAreaView edges={["top"]} style={styles.fill}>
             <View style={styles.header}>
-              <HapticPressable onPress={goBack}>
+              <HapticPressable
+                onPress={() => {
+                  Keyboard.dismiss();
+                  goBack();
+                }}
+              >
                 <View style={styles.headerBtn}>
                   <MaterialIcons
                     color={textColor}
@@ -53,16 +58,19 @@ export default function FolderNewScreen() {
               <StyledText style={[styles.headerTitle, { color: textColor }]}>
                 New Folder
               </StyledText>
-              <HapticPressable onPress={handleSave}>
-                <View style={styles.headerBtn}>
-                  <MaterialIcons
-                    color={textColor}
-                    name="check"
-                    size={n(28)}
-                    style={{ opacity: canSave ? 1 : 0.3 }}
-                  />
-                </View>
-              </HapticPressable>
+              {canSave ? (
+                <HapticPressable onPress={handleSave}>
+                  <View style={styles.headerBtn}>
+                    <MaterialIcons
+                      color={textColor}
+                      name="check"
+                      size={n(28)}
+                    />
+                  </View>
+                </HapticPressable>
+              ) : (
+                <View style={styles.headerBtn} />
+              )}
             </View>
 
             <View style={styles.inputArea}>

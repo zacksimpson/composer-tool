@@ -1,4 +1,4 @@
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Animated, StyleSheet, View } from "react-native";
@@ -17,7 +17,8 @@ import { n } from "@/utils/scaling";
 
 export default function FoldersScreen() {
   const { invertColors } = useInvertColors();
-  const { folders, addNote, moveFolderUp, moveFolderDown } = useComposer();
+  const { folders, notes, addNote, moveFolderUp, moveFolderDown } =
+    useComposer();
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
 
@@ -109,12 +110,35 @@ export default function FoldersScreen() {
                     }}
                     style={styles.folderRow}
                   >
-                    <StyledText
-                      numberOfLines={1}
-                      style={[styles.folderName, { color: textColor }]}
-                    >
-                      {folder.name}
-                    </StyledText>
+                    <View style={styles.folderInfo}>
+                      <StyledText
+                        numberOfLines={1}
+                        style={[styles.folderName, { color: textColor }]}
+                      >
+                        {folder.name}
+                      </StyledText>
+                      <View style={styles.folderMeta}>
+                        <MaterialCommunityIcons
+                          color={textColor}
+                          name="folder-outline"
+                          size={n(18)}
+                          style={styles.folderMetaIcon}
+                        />
+                        <StyledText
+                          style={[styles.folderCount, { color: textColor }]}
+                        >
+                          {(() => {
+                            const count = notes.filter(
+                              (note) => note.folderId === folder.id
+                            ).length;
+                            if (count === 0) {
+                              return "No Notes";
+                            }
+                            return count === 1 ? "1 Note" : `${count} Notes`;
+                          })()}
+                        </StyledText>
+                      </View>
+                    </View>
                     {isReordering && (
                       <View style={styles.arrowGroup}>
                         <HapticPressable
@@ -231,9 +255,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: n(26),
     paddingVertical: n(11),
   },
+  folderInfo: {
+    flex: 1,
+  },
   folderName: {
     fontSize: n(30),
-    flex: 1,
+  },
+  folderMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: n(2),
+  },
+  folderMetaIcon: {
+    marginRight: n(5),
+  },
+  folderCount: {
+    fontSize: n(16),
   },
   arrowGroup: {
     flexDirection: "row",

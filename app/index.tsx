@@ -206,14 +206,14 @@ export default function NotesListScreen() {
       <View style={[styles.toolbar, { backgroundColor: bg }]}>
         {isEditMode ? (
           <View style={styles.editToolbar}>
-            {/* DELETE — left, only when items selected */}
+            {/* MOVE — left, only when items selected */}
             {selectedIds.size > 0 ? (
               <HapticPressable
-                onPress={handleDelete}
+                onPress={handleMove}
                 style={styles.editToolbarLeft}
               >
                 <StyledText style={[styles.toolbarLabel, { color: textColor }]}>
-                  DELETE
+                  MOVE
                 </StyledText>
               </HapticPressable>
             ) : (
@@ -225,14 +225,14 @@ export default function NotesListScreen() {
               <MaterialIcons color={textColor} name="close" size={n(40)} />
             </HapticPressable>
 
-            {/* MOVE — right, only when items selected */}
+            {/* DELETE — right, only when items selected */}
             {selectedIds.size > 0 ? (
               <HapticPressable
-                onPress={handleMove}
+                onPress={handleDelete}
                 style={styles.editToolbarRight}
               >
                 <StyledText style={[styles.toolbarLabel, { color: textColor }]}>
-                  MOVE
+                  DELETE
                 </StyledText>
               </HapticPressable>
             ) : (
@@ -278,13 +278,14 @@ const styles = StyleSheet.create({
   scrollThumb: scrollIndicatorBaseStyles.thumb,
   noteRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     paddingHorizontal: n(26),
     paddingVertical: n(11),
     paddingRight: n(36),
   },
   checkboxArea: {
     marginRight: n(12),
+    paddingTop: n(5),
   },
   noteText: {
     flex: 1,
@@ -318,11 +319,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   editToolbarLeft: {
-    minWidth: n(80),
+    flex: 1,
     alignItems: "flex-start",
   },
   editToolbarRight: {
-    minWidth: n(80),
+    flex: 1,
     alignItems: "flex-end",
   },
   toolbarLabel: {

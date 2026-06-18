@@ -80,6 +80,12 @@ const WELCOME_NOTE_BODY = [
   " ",
   "",
   "> Blockquote — `> text`",
+  "",
+  " ",
+  "",
+  "---",
+  "",
+  "Divider line — type `---` on its own line",
 ].join("\n");
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

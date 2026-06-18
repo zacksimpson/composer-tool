@@ -273,6 +273,7 @@ export default function FolderDetailScreen() {
                 <View style={styles.editToolbarLeft} />
               )}
 
+              {/* X — centered */}
               <HapticPressable onPress={exitEditMode}>
                 <MaterialIcons color={textColor} name="close" size={n(40)} />
               </HapticPressable>
@@ -346,12 +347,12 @@ const styles = StyleSheet.create({
   scrollThumb: scrollIndicatorBaseStyles.thumb,
   noteRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     paddingHorizontal: n(26),
     paddingVertical: n(11),
     paddingRight: n(36),
   },
-  checkboxArea: { marginRight: n(12) },
+  checkboxArea: { marginRight: n(12), paddingTop: n(5) },
   noteText: { flex: 1 },
   noteTitle: { fontSize: n(24), letterSpacing: n(0.5) },
   noteMeta: {
@@ -383,11 +384,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   editToolbarLeft: {
-    minWidth: n(80),
+    flex: 1,
     alignItems: "flex-start",
   },
   editToolbarRight: {
-    minWidth: n(100),
+    flex: 1,
     alignItems: "flex-end",
   },
   toolbarLabel: {
