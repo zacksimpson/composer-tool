@@ -69,88 +69,102 @@ export default function FoldersScreen() {
 
       {/* Folder list */}
       <View style={styles.scrollWrapper}>
-        <Animated.ScrollView
-          onLayout={(e) => setScrollViewHeight(e.nativeEvent.layout.height)}
-          onScroll={handleScroll}
-          overScrollMode="never"
-          scrollEventThrottle={16}
-          showsVerticalScrollIndicator={false}
-        >
-          <View onLayout={(e) => setContentHeight(e.nativeEvent.layout.height)}>
-            {sorted.map((folder, idx) => (
-              <HapticPressable
-                delayLongPress={400}
-                key={folder.id}
-                onLongPress={() => {
-                  if (!isReordering) {
-                    router.push({
-                      pathname: "/folder-actions/[id]",
-                      params: { id: folder.id },
-                    });
-                  }
-                }}
-                onPress={() => {
-                  if (!isReordering) {
-                    router.push({
-                      pathname: "/folder/[id]",
-                      params: { id: folder.id },
-                    });
-                  }
-                }}
-                style={styles.folderRow}
+        {sorted.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <StyledText style={[styles.emptyText, { color: textColor }]}>
+              no folders
+            </StyledText>
+          </View>
+        ) : (
+          <>
+            <Animated.ScrollView
+              onLayout={(e) => setScrollViewHeight(e.nativeEvent.layout.height)}
+              onScroll={handleScroll}
+              overScrollMode="never"
+              scrollEventThrottle={16}
+              showsVerticalScrollIndicator={false}
+            >
+              <View
+                onLayout={(e) => setContentHeight(e.nativeEvent.layout.height)}
               >
-                <StyledText
-                  numberOfLines={1}
-                  style={[styles.folderName, { color: textColor }]}
-                >
-                  {folder.name}
-                </StyledText>
-                {isReordering && (
-                  <View style={styles.arrowGroup}>
-                    <HapticPressable
-                      disabled={idx === 0}
-                      onPress={() => moveFolderUp(folder.id)}
+                {sorted.map((folder, idx) => (
+                  <HapticPressable
+                    delayLongPress={400}
+                    key={folder.id}
+                    onLongPress={() => {
+                      if (!isReordering) {
+                        router.push({
+                          pathname: "/folder-actions/[id]",
+                          params: { id: folder.id },
+                        });
+                      }
+                    }}
+                    onPress={() => {
+                      if (!isReordering) {
+                        router.push({
+                          pathname: "/folder/[id]",
+                          params: { id: folder.id },
+                        });
+                      }
+                    }}
+                    style={styles.folderRow}
+                  >
+                    <StyledText
+                      numberOfLines={1}
+                      style={[styles.folderName, { color: textColor }]}
                     >
-                      <MaterialIcons
-                        color={textColor}
-                        name="keyboard-arrow-up"
-                        size={n(32)}
-                        style={idx === 0 && styles.arrowDisabled}
-                      />
-                    </HapticPressable>
-                    <HapticPressable
-                      disabled={idx === sorted.length - 1}
-                      onPress={() => moveFolderDown(folder.id)}
-                    >
-                      <MaterialIcons
-                        color={textColor}
-                        name="keyboard-arrow-down"
-                        size={n(32)}
-                        style={
-                          idx === sorted.length - 1 && styles.arrowDisabled
-                        }
-                      />
-                    </HapticPressable>
-                  </View>
-                )}
-              </HapticPressable>
-            ))}
-          </View>
-        </Animated.ScrollView>
+                      {folder.name}
+                    </StyledText>
+                    {isReordering && (
+                      <View style={styles.arrowGroup}>
+                        <HapticPressable
+                          disabled={idx === 0}
+                          onPress={() => moveFolderUp(folder.id)}
+                        >
+                          <MaterialIcons
+                            color={textColor}
+                            name="keyboard-arrow-up"
+                            size={n(32)}
+                            style={idx === 0 && styles.arrowDisabled}
+                          />
+                        </HapticPressable>
+                        <HapticPressable
+                          disabled={idx === sorted.length - 1}
+                          onPress={() => moveFolderDown(folder.id)}
+                        >
+                          <MaterialIcons
+                            color={textColor}
+                            name="keyboard-arrow-down"
+                            size={n(32)}
+                            style={
+                              idx === sorted.length - 1 && styles.arrowDisabled
+                            }
+                          />
+                        </HapticPressable>
+                      </View>
+                    )}
+                  </HapticPressable>
+                ))}
+              </View>
+            </Animated.ScrollView>
 
-        {scrollIndicatorHeight > 0 && (
-          <View style={[styles.scrollTrack, { backgroundColor: textColor }]}>
-            <Animated.View
-              style={[
-                styles.scrollThumb,
-                {
-                  backgroundColor: textColor,
-                  height: scrollIndicatorHeight,
-                  transform: [{ translateY: scrollIndicatorPosition }],
-                },
-              ]}
-            />
-          </View>
+            {scrollIndicatorHeight > 0 && (
+              <View
+                style={[styles.scrollTrack, { backgroundColor: textColor }]}
+              >
+                <Animated.View
+                  style={[
+                    styles.scrollThumb,
+                    {
+                      backgroundColor: textColor,
+                      height: scrollIndicatorHeight,
+                      transform: [{ translateY: scrollIndicatorPosition }],
+                    },
+                  ]}
+                />
+              </View>
+            )}
+          </>
         )}
       </View>
 
@@ -201,6 +215,14 @@ const styles = StyleSheet.create({
     paddingTop: n(2),
   },
   scrollWrapper: { flex: 1, flexDirection: "row", position: "relative" },
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyText: {
+    fontSize: n(24),
+  },
   scrollTrack: scrollIndicatorBaseStyles.track,
   scrollThumb: scrollIndicatorBaseStyles.thumb,
   folderRow: {
