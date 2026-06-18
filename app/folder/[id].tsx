@@ -159,87 +159,98 @@ export default function FolderDetailScreen() {
 
         {/* Notes list */}
         <View style={styles.scrollWrapper}>
-          <Animated.ScrollView
-            keyboardShouldPersistTaps="handled"
-            onLayout={(e) => setScrollViewHeight(e.nativeEvent.layout.height)}
-            onScroll={handleScroll}
-            overScrollMode="never"
-            scrollEventThrottle={16}
-            showsVerticalScrollIndicator={false}
-          >
-            <View
-              onLayout={(e) => setContentHeight(e.nativeEvent.layout.height)}
-            >
-              {sorted.map((note) => {
-                const isSelected = selectedIds.has(note.id);
-                return (
-                  <HapticPressable
-                    key={note.id}
-                    onLongPress={() => handleNoteLongPress(note.id)}
-                    onPress={() => handleNotePress(note.id)}
-                    style={styles.noteRow}
-                  >
-                    {isEditMode && (
-                      <View style={styles.checkboxArea}>
-                        {isSelected ? (
-                          <MaterialIcons
-                            color={textColor}
-                            name="check-box"
-                            size={n(24)}
-                          />
-                        ) : (
-                          <MaterialIcons
-                            color={textColor}
-                            name="check-box-outline-blank"
-                            size={n(24)}
-                          />
-                        )}
-                      </View>
-                    )}
-                    <View style={styles.noteText}>
-                      <StyledText
-                        numberOfLines={1}
-                        style={[styles.noteTitle, { color: textColor }]}
+          {sorted.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <StyledText style={[styles.emptyText, { color: textColor }]}>
+                no notes in this folder
+              </StyledText>
+            </View>
+          ) : (
+            <>
+              <Animated.ScrollView
+                keyboardShouldPersistTaps="handled"
+                onLayout={(e) =>
+                  setScrollViewHeight(e.nativeEvent.layout.height)
+                }
+                onScroll={handleScroll}
+                overScrollMode="never"
+                scrollEventThrottle={16}
+                showsVerticalScrollIndicator={false}
+              >
+                <View
+                  onLayout={(e) =>
+                    setContentHeight(e.nativeEvent.layout.height)
+                  }
+                >
+                  {sorted.map((note) => {
+                    const isSelected = selectedIds.has(note.id);
+                    return (
+                      <HapticPressable
+                        key={note.id}
+                        onLongPress={() => handleNoteLongPress(note.id)}
+                        onPress={() => handleNotePress(note.id)}
+                        style={styles.noteRow}
                       >
-                        {getDisplayTitle(note.title, note.body)}
-                      </StyledText>
-                      <View style={styles.noteMeta}>
-                        <NoteEditIcon
-                          color={textColor}
-                          size={18}
-                          style={styles.editIcon}
-                        />
-                        <StyledText
-                          style={[styles.noteDate, { color: textColor }]}
-                        >
-                          {formatDate(note[sortKey])}
-                        </StyledText>
-                      </View>
-                    </View>
-                  </HapticPressable>
-                );
-              })}
-              {sorted.length === 0 && (
-                <StyledText style={[styles.emptyText, { color: textColor }]}>
-                  No notes in this folder
-                </StyledText>
-              )}
-            </View>
-          </Animated.ScrollView>
+                        {isEditMode && (
+                          <View style={styles.checkboxArea}>
+                            {isSelected ? (
+                              <MaterialIcons
+                                color={textColor}
+                                name="check-box"
+                                size={n(24)}
+                              />
+                            ) : (
+                              <MaterialIcons
+                                color={textColor}
+                                name="check-box-outline-blank"
+                                size={n(24)}
+                              />
+                            )}
+                          </View>
+                        )}
+                        <View style={styles.noteText}>
+                          <StyledText
+                            numberOfLines={1}
+                            style={[styles.noteTitle, { color: textColor }]}
+                          >
+                            {getDisplayTitle(note.title, note.body)}
+                          </StyledText>
+                          <View style={styles.noteMeta}>
+                            <NoteEditIcon
+                              color={textColor}
+                              size={18}
+                              style={styles.editIcon}
+                            />
+                            <StyledText
+                              style={[styles.noteDate, { color: textColor }]}
+                            >
+                              {formatDate(note[sortKey])}
+                            </StyledText>
+                          </View>
+                        </View>
+                      </HapticPressable>
+                    );
+                  })}
+                </View>
+              </Animated.ScrollView>
 
-          {scrollIndicatorHeight > 0 && (
-            <View style={[styles.scrollTrack, { backgroundColor: textColor }]}>
-              <Animated.View
-                style={[
-                  styles.scrollThumb,
-                  {
-                    backgroundColor: textColor,
-                    height: scrollIndicatorHeight,
-                    transform: [{ translateY: scrollIndicatorPosition }],
-                  },
-                ]}
-              />
-            </View>
+              {scrollIndicatorHeight > 0 && (
+                <View
+                  style={[styles.scrollTrack, { backgroundColor: textColor }]}
+                >
+                  <Animated.View
+                    style={[
+                      styles.scrollThumb,
+                      {
+                        backgroundColor: textColor,
+                        height: scrollIndicatorHeight,
+                        transform: [{ translateY: scrollIndicatorPosition }],
+                      },
+                    ]}
+                  />
+                </View>
+              )}
+            </>
           )}
         </View>
 
@@ -350,11 +361,13 @@ const styles = StyleSheet.create({
   },
   editIcon: { marginRight: n(5) },
   noteDate: { fontSize: n(16) },
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   emptyText: {
     fontSize: n(20),
-    paddingHorizontal: n(26),
-    paddingTop: n(20),
-    opacity: 0.5,
   },
   toolbar: {
     flexDirection: "row",
