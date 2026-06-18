@@ -142,15 +142,15 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: n(22),
-    paddingTop: n(16),
+    paddingTop: n(10),
   },
   row: {
     flexDirection: "column",
     alignItems: "flex-start",
-    paddingVertical: n(16),
+    paddingVertical: n(10),
   },
   toggleRow: {
-    paddingTop: n(7),
+    paddingTop: n(1),
   },
   rowLabel: {
     fontSize: n(20),
