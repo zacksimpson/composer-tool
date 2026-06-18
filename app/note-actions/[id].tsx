@@ -54,7 +54,7 @@ export default function NoteActionsScreen() {
       pathname: "/confirm",
       params: {
         title: getDisplayTitle(note?.title ?? null, note?.body ?? ""),
-        message: "Delete this note?",
+        message: "Are you sure you'd like to delete this note?",
         confirmText: "Delete",
         action: `delete-note:${id}`,
         returnPath: "/",

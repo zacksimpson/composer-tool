@@ -60,7 +60,7 @@ export default function FolderActionsScreen() {
                 pathname: "/confirm",
                 params: {
                   title: folderName,
-                  message: `Delete ${folderName}? Notes inside will not be deleted.`,
+                  message: "Are you sure you'd like to delete this folder?",
                   confirmText: "Delete",
                   action: `delete-folder:${id}`,
                   returnPath: "/folders",

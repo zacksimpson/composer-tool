@@ -58,12 +58,14 @@ export default function ConfirmScreen() {
               />
             </View>
           </HapticPressable>
-          <StyledText
-            numberOfLines={1}
-            style={[styles.headerTitle, { color: textColor }]}
-          >
-            {params.title}
-          </StyledText>
+          <View style={styles.headerTitleWrap}>
+            <StyledText
+              numberOfLines={1}
+              style={[styles.headerTitle, { color: textColor }]}
+            >
+              {params.title}
+            </StyledText>
+          </View>
           <View style={sharedStyles.headerBtn} />
         </View>
 
@@ -92,24 +94,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: n(22),
     paddingVertical: n(5),
   },
-  headerTitle: {
+  headerTitleWrap: {
     flex: 1,
+    alignItems: "center",
+    paddingHorizontal: n(8),
+  },
+  headerTitle: {
     fontSize: n(20),
     paddingTop: n(2),
-    textAlign: "center",
-    paddingHorizontal: n(8),
   },
   messageContainer: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "flex-start",
-    paddingTop: n(40),
+    justifyContent: "center",
+    paddingBottom: n(60),
     paddingHorizontal: n(40),
   },
   messageText: {
-    fontSize: n(22),
+    fontSize: n(24),
     textAlign: "center",
-    lineHeight: n(32),
+    lineHeight: n(34),
   },
   confirmBtn: {
     alignItems: "center",

@@ -113,7 +113,10 @@ export default function FolderDetailScreen() {
       pathname: "/confirm",
       params: {
         title,
-        message: count === 1 ? "Delete this note?" : `Delete ${count} notes?`,
+        message:
+          count === 1
+            ? "Are you sure you'd like to delete this note?"
+            : `Are you sure you'd like to delete these ${count} notes?`,
         confirmText: "Delete",
         action: `delete-notes:${ids.join(",")}`,
         returnPath: `/folder/${id}`,
