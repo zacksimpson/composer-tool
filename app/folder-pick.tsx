@@ -4,10 +4,12 @@ import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HapticPressable } from "@/components/HapticPressable";
 import { StyledText } from "@/components/StyledText";
+import { SwipeBackContainer } from "@/components/SwipeBackContainer";
 import { useComposer } from "@/contexts/ComposerContext";
 import { useInvertColors } from "@/contexts/InvertColorsContext";
 import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
+import { sharedStyles } from "@/utils/sharedStyles";
 
 export default function FolderPickScreen() {
   const { noteIds, returnPath } = useLocalSearchParams<{
@@ -32,46 +34,48 @@ export default function FolderPickScreen() {
   };
 
   return (
-    <SafeAreaView
-      edges={["top"]}
-      style={[styles.container, { backgroundColor: bg }]}
-    >
-      <View style={styles.header}>
-        <HapticPressable onPress={goBack}>
-          <View style={styles.headerBtn}>
-            <MaterialIcons
-              color={textColor}
-              name="arrow-back-ios"
-              size={n(28)}
-            />
-          </View>
-        </HapticPressable>
-        <StyledText style={[styles.headerTitle, { color: textColor }]}>
-          Move to Folder
-        </StyledText>
-        <View style={styles.headerBtn} />
-      </View>
-
-      <View style={styles.actions}>
-        {sorted.map((folder) => (
-          <HapticPressable
-            key={folder.id}
-            onPress={() => handlePick(folder.id)}
-            style={styles.row}
-          >
-            <StyledText style={[styles.rowLabel, { color: textColor }]}>
-              {folder.name}
-            </StyledText>
+    <SwipeBackContainer onSwipeBack={goBack}>
+      <SafeAreaView
+        edges={["top"]}
+        style={[styles.container, { backgroundColor: bg }]}
+      >
+        <View style={styles.header}>
+          <HapticPressable onPress={goBack}>
+            <View style={sharedStyles.headerBtn}>
+              <MaterialIcons
+                color={textColor}
+                name="arrow-back-ios"
+                size={n(28)}
+              />
+            </View>
           </HapticPressable>
-        ))}
-
-        {sorted.length === 0 && (
-          <StyledText style={[styles.emptyText, { color: textColor }]}>
-            No folders yet
+          <StyledText style={[styles.headerTitle, { color: textColor }]}>
+            Move to Folder
           </StyledText>
-        )}
-      </View>
-    </SafeAreaView>
+          <View style={sharedStyles.headerBtn} />
+        </View>
+
+        <View style={styles.actions}>
+          {sorted.map((folder) => (
+            <HapticPressable
+              key={folder.id}
+              onPress={() => handlePick(folder.id)}
+              style={styles.row}
+            >
+              <StyledText style={[styles.rowLabel, { color: textColor }]}>
+                {folder.name}
+              </StyledText>
+            </HapticPressable>
+          ))}
+
+          {sorted.length === 0 && (
+            <StyledText style={[styles.emptyText, { color: textColor }]}>
+              No folders yet
+            </StyledText>
+          )}
+        </View>
+      </SafeAreaView>
+    </SwipeBackContainer>
   );
 }
 
@@ -83,13 +87,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: n(22),
     paddingVertical: n(5),
-  },
-  headerBtn: {
-    width: n(32),
-    height: n(32),
-    alignItems: "center",
-    paddingTop: n(6),
-    paddingRight: n(4),
   },
   headerTitle: {
     fontSize: n(20),
@@ -109,6 +106,5 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: n(20),
     paddingTop: n(20),
-    opacity: 0.5,
   },
 });

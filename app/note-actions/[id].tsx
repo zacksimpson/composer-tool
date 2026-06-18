@@ -135,6 +135,7 @@ const styles = StyleSheet.create({
     paddingVertical: n(14),
   },
   rowLabel: {
+    fontFamily: "PublicSans-Regular",
     fontSize: n(30),
   },
 });

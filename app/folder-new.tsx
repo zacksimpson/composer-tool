@@ -15,6 +15,7 @@ import { useComposer } from "@/contexts/ComposerContext";
 import { useInvertColors } from "@/contexts/InvertColorsContext";
 import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
+import { sharedStyles } from "@/utils/sharedStyles";
 
 export default function FolderNewScreen() {
   const { invertColors } = useInvertColors();
@@ -47,7 +48,7 @@ export default function FolderNewScreen() {
                   goBack();
                 }}
               >
-                <View style={styles.headerBtn}>
+                <View style={sharedStyles.headerBtn}>
                   <MaterialIcons
                     color={textColor}
                     name="arrow-back-ios"
@@ -60,7 +61,7 @@ export default function FolderNewScreen() {
               </StyledText>
               {canSave ? (
                 <HapticPressable onPress={handleSave}>
-                  <View style={styles.headerBtn}>
+                  <View style={sharedStyles.headerBtn}>
                     <MaterialIcons
                       color={textColor}
                       name="check"
@@ -69,7 +70,7 @@ export default function FolderNewScreen() {
                   </View>
                 </HapticPressable>
               ) : (
-                <View style={styles.headerBtn} />
+                <View style={sharedStyles.headerBtn} />
               )}
             </View>
 
@@ -107,13 +108,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: n(22),
     paddingVertical: n(5),
-  },
-  headerBtn: {
-    width: n(32),
-    height: n(32),
-    alignItems: "center",
-    paddingTop: n(6),
-    paddingRight: n(4),
   },
   headerTitle: {
     fontSize: n(20),

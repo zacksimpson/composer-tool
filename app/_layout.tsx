@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
 import { MILKDOWN_EDITOR_HTML } from "@/assets/milkdown-editor";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { HapticPressable } from "@/components/HapticPressable";
 import { StyledText } from "@/components/StyledText";
 import { ComposerProvider, useComposer } from "@/contexts/ComposerContext";
@@ -251,13 +252,15 @@ function AppWithData() {
 export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
-      <InvertColorsProvider>
-        <ComposerProvider>
-          <EditorProvider>
-            <AppWithData />
-          </EditorProvider>
-        </ComposerProvider>
-      </InvertColorsProvider>
+      <ErrorBoundary>
+        <InvertColorsProvider>
+          <ComposerProvider>
+            <EditorProvider>
+              <AppWithData />
+            </EditorProvider>
+          </ComposerProvider>
+        </InvertColorsProvider>
+      </ErrorBoundary>
     </GestureHandlerRootView>
   );
 }

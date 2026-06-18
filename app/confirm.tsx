@@ -6,6 +6,7 @@ import { StyledText } from "@/components/StyledText";
 import { SwipeBackContainer } from "@/components/SwipeBackContainer";
 import { useComposer } from "@/contexts/ComposerContext";
 import { useInvertColors } from "@/contexts/InvertColorsContext";
+import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
 
 export default function ConfirmScreen() {
@@ -36,23 +37,19 @@ export default function ConfirmScreen() {
     }
 
     const path = params.returnPath || "/";
-    router.dismissTo(`${path}?toast=deleted`);
-  };
-
-  const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    }
+    router.dismissTo(`${path}?toast=Deleted`);
   };
 
   return (
-    <SwipeBackContainer enabled onSwipeBack={handleBack}>
+    <SwipeBackContainer enabled onSwipeBack={goBack}>
       <SafeAreaView
         edges={["top"]}
         style={[styles.container, { backgroundColor: bg }]}
       >
         <View style={styles.messageContainer}>
-          <StyledText style={styles.messageText}>{params.message}</StyledText>
+          <StyledText style={[styles.messageText, { color: textColor }]}>
+            {params.message}
+          </StyledText>
         </View>
 
         <HapticPressable onPress={handleConfirm} style={styles.confirmBtn}>

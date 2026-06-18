@@ -15,18 +15,10 @@ import {
   scrollIndicatorBaseStyles,
   useScrollIndicator,
 } from "@/hooks/useScrollIndicator";
+import { formatDate } from "@/utils/formatDate";
 import { triggerHaptic } from "@/utils/haptics";
 import { n } from "@/utils/scaling";
 import { getDisplayTitle } from "@/utils/stripMarkdown";
-
-function formatDate(ts: number): string {
-  const d = new Date(ts);
-  return d.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 export default function NotesListScreen() {
   const { invertColors } = useInvertColors();
@@ -166,7 +158,10 @@ export default function NotesListScreen() {
                     </View>
                   )}
                   <View style={styles.noteText}>
-                    <StyledText numberOfLines={1} style={styles.noteTitle}>
+                    <StyledText
+                      numberOfLines={1}
+                      style={[styles.noteTitle, { color: textColor }]}
+                    >
                       {getDisplayTitle(note.title, note.body)}
                     </StyledText>
                     <View style={styles.noteMeta}>
@@ -175,7 +170,9 @@ export default function NotesListScreen() {
                         size={18}
                         style={styles.editIcon}
                       />
-                      <StyledText style={styles.noteDate}>
+                      <StyledText
+                        style={[styles.noteDate, { color: textColor }]}
+                      >
                         {formatDate(note[sortKey])}
                       </StyledText>
                     </View>

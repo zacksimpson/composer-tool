@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HapticPressable } from "@/components/HapticPressable";
@@ -14,6 +14,14 @@ import {
   useScrollIndicator,
 } from "@/hooks/useScrollIndicator";
 import { n } from "@/utils/scaling";
+import { sharedStyles } from "@/utils/sharedStyles";
+
+function formatFolderCount(count: number): string {
+  if (count === 0) {
+    return "No Notes";
+  }
+  return count === 1 ? "1 Note" : `${count} Notes`;
+}
 
 export default function FoldersScreen() {
   const { invertColors } = useInvertColors();
@@ -42,6 +50,16 @@ export default function FoldersScreen() {
 
   const sorted = [...folders].sort((a, b) => a.order - b.order);
 
+  const noteCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const note of notes) {
+      if (note.folderId) {
+        map.set(note.folderId, (map.get(note.folderId) ?? 0) + 1);
+      }
+    }
+    return map;
+  }, [notes]);
+
   return (
     <SafeAreaView
       edges={["top"]}
@@ -49,19 +67,19 @@ export default function FoldersScreen() {
     >
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerBtn} />
+        <View style={sharedStyles.headerBtn} />
         <StyledText style={[styles.headerTitle, { color: textColor }]}>
           Folders
         </StyledText>
         {isReordering ? (
           <HapticPressable onPress={() => setIsReordering(false)}>
-            <View style={styles.headerBtn}>
+            <View style={sharedStyles.headerBtn}>
               <MaterialIcons color={textColor} name="check" size={n(28)} />
             </View>
           </HapticPressable>
         ) : (
           <HapticPressable onPress={() => router.push("/folder-new")}>
-            <View style={styles.headerBtn}>
+            <View style={sharedStyles.headerBtn}>
               <MaterialIcons color={textColor} name="add" size={n(28)} />
             </View>
           </HapticPressable>
@@ -127,15 +145,7 @@ export default function FoldersScreen() {
                         <StyledText
                           style={[styles.folderCount, { color: textColor }]}
                         >
-                          {(() => {
-                            const count = notes.filter(
-                              (note) => note.folderId === folder.id
-                            ).length;
-                            if (count === 0) {
-                              return "No Notes";
-                            }
-                            return count === 1 ? "1 Note" : `${count} Notes`;
-                          })()}
+                          {formatFolderCount(noteCounts.get(folder.id) ?? 0)}
                         </StyledText>
                       </View>
                     </View>
@@ -226,13 +236,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: n(22),
     paddingVertical: n(5),
-  },
-  headerBtn: {
-    width: n(32),
-    height: n(32),
-    alignItems: "center",
-    paddingTop: n(6),
-    paddingRight: n(4),
   },
   headerTitle: {
     fontSize: n(20),

@@ -16,19 +16,12 @@ import {
   scrollIndicatorBaseStyles,
   useScrollIndicator,
 } from "@/hooks/useScrollIndicator";
+import { formatDate } from "@/utils/formatDate";
 import { triggerHaptic } from "@/utils/haptics";
 import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
+import { sharedStyles } from "@/utils/sharedStyles";
 import { getDisplayTitle } from "@/utils/stripMarkdown";
-
-function formatDate(ts: number): string {
-  const d = new Date(ts);
-  return d.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 export default function FolderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -140,7 +133,7 @@ export default function FolderDetailScreen() {
         {/* Header */}
         <View style={styles.header}>
           <HapticPressable onPress={goBack}>
-            <View style={styles.headerBtn}>
+            <View style={sharedStyles.headerBtn}>
               <MaterialIcons
                 color={textColor}
                 name="arrow-back-ios"
@@ -154,7 +147,7 @@ export default function FolderDetailScreen() {
           >
             {folder.name}
           </StyledText>
-          <View style={styles.headerBtn} />
+          <View style={sharedStyles.headerBtn} />
         </View>
 
         {/* Notes list */}
@@ -330,13 +323,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: n(22),
     paddingVertical: n(5),
-  },
-  headerBtn: {
-    width: n(32),
-    height: n(32),
-    alignItems: "center",
-    paddingTop: n(6),
-    paddingRight: n(4),
   },
   headerTitle: {
     fontSize: n(20),

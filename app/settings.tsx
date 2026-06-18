@@ -1,10 +1,13 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { setStringAsync } from "expo-clipboard";
 import { router } from "expo-router";
+import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HapticPressable } from "@/components/HapticPressable";
 import { StyledText } from "@/components/StyledText";
 import { SwipeBackContainer } from "@/components/SwipeBackContainer";
+import { Toast } from "@/components/Toast";
 import { ToggleSwitch } from "@/components/ToggleSwitch";
 import { useComposer } from "@/contexts/ComposerContext";
 import { useInvertColors } from "@/contexts/InvertColorsContext";
@@ -25,7 +28,16 @@ const SORT_ORDER_LABELS: Record<string, string> = {
 
 export default function SettingsScreen() {
   const { invertColors, setInvertColors } = useInvertColors();
-  const { settings } = useComposer();
+  const { settings, notes } = useComposer();
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const handleExportNotes = async () => {
+    const text = notes.map((note) => note.body).join("\n\n");
+    await setStringAsync(text);
+    setToastMessage("Copied");
+    setToastVisible(true);
+  };
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
 
@@ -46,7 +58,9 @@ export default function SettingsScreen() {
               />
             </View>
           </HapticPressable>
-          <StyledText style={styles.headerTitle}>Settings</StyledText>
+          <StyledText style={[styles.headerTitle, { color: textColor }]}>
+            Settings
+          </StyledText>
           <View style={styles.headerBtn} />
         </View>
 
@@ -83,8 +97,23 @@ export default function SettingsScreen() {
             onValueChange={setInvertColors}
             value={invertColors}
           />
+
+          <HapticPressable onPress={handleExportNotes} style={styles.row}>
+            <StyledText style={[styles.rowLabel, { color: textColor }]}>
+              Export Notes
+            </StyledText>
+            <StyledText style={[styles.rowValue, { color: textColor }]}>
+              Copy All as Text
+            </StyledText>
+          </HapticPressable>
         </View>
       </SafeAreaView>
+
+      <Toast
+        message={toastMessage}
+        onHide={() => setToastVisible(false)}
+        visible={toastVisible}
+      />
     </SwipeBackContainer>
   );
 }

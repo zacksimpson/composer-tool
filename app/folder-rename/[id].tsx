@@ -16,6 +16,7 @@ import { useComposer } from "@/contexts/ComposerContext";
 import { useInvertColors } from "@/contexts/InvertColorsContext";
 import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
+import { sharedStyles } from "@/utils/sharedStyles";
 
 export default function FolderRenameScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -34,7 +35,7 @@ export default function FolderRenameScreen() {
     }
     renameFolder(id, name.trim());
     Keyboard.dismiss();
-    router.navigate("/folders");
+    router.dismissTo("/folders");
   }, [canSave, id, name, renameFolder]);
 
   if (!folder) {
@@ -48,7 +49,7 @@ export default function FolderRenameScreen() {
           <SafeAreaView edges={["top"]} style={styles.fill}>
             <View style={styles.header}>
               <HapticPressable onPress={goBack}>
-                <View style={styles.headerBtn}>
+                <View style={sharedStyles.headerBtn}>
                   <MaterialIcons
                     color={textColor}
                     name="arrow-back-ios"
@@ -59,16 +60,19 @@ export default function FolderRenameScreen() {
               <StyledText style={[styles.headerTitle, { color: textColor }]}>
                 Rename
               </StyledText>
-              <HapticPressable onPress={handleSave}>
-                <View style={styles.headerBtn}>
-                  <MaterialIcons
-                    color={textColor}
-                    name="check"
-                    size={n(28)}
-                    style={{ opacity: canSave ? 1 : 0.3 }}
-                  />
-                </View>
-              </HapticPressable>
+              {canSave ? (
+                <HapticPressable onPress={handleSave}>
+                  <View style={sharedStyles.headerBtn}>
+                    <MaterialIcons
+                      color={textColor}
+                      name="check"
+                      size={n(28)}
+                    />
+                  </View>
+                </HapticPressable>
+              ) : (
+                <View style={sharedStyles.headerBtn} />
+              )}
             </View>
 
             <View style={styles.inputArea}>
@@ -103,13 +107,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: n(22),
     paddingVertical: n(5),
-  },
-  headerBtn: {
-    width: n(32),
-    height: n(32),
-    alignItems: "center",
-    paddingTop: n(6),
-    paddingRight: n(4),
   },
   headerTitle: {
     fontSize: n(20),
