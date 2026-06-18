@@ -32,6 +32,12 @@ body {
   color: COMPOSER_BG;
 }
 
+::spelling-error {
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-color: currentColor;
+}
+
 #app {
   padding: 10px 36px 400px 22px;
 }
