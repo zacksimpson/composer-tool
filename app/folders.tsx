@@ -210,8 +210,7 @@ const styles = StyleSheet.create({
     paddingVertical: n(11),
   },
   folderName: {
-    fontSize: n(24),
-    letterSpacing: n(0.5),
+    fontSize: n(30),
     flex: 1,
   },
   arrowGroup: {
