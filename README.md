@@ -13,6 +13,7 @@ Composer is a minimal writing tool for people who want to capture thoughts, idea
 
 * WYSIWYG Markdown editing – formatting renders in real time as you type
 * Copy note contents as either Markdown or plain text
+* Organize notes into folders, with bulk move and reorder support
 * Notes sorted by most recently edited, always at the top
 * Rename notes independently from their body content
 * Delete notes individually or in bulk
