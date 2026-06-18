@@ -69,6 +69,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const activeNoteRef = useRef<ActiveNote | null>(null);
   const isEditorReadyRef = useRef(false);
   const hasUserEditedRef = useRef(false);
+  const isFirstChangeRef = useRef(true);
+  const normalizedInitialBodyRef = useRef("");
   const pendingOpenRef = useRef<{ body: string; autoFocus: boolean } | null>(
     null
   );
@@ -148,6 +150,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       bodyRef.current = initialBody;
       activeNoteRef.current = note;
       hasUserEditedRef.current = false;
+      isFirstChangeRef.current = true;
+      normalizedInitialBodyRef.current = initialBody;
       scrollY.setValue(0);
       setEditorScrollHeight(0);
       setEditorClientHeight(0);
@@ -173,7 +177,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     const trimmed = bodyRef.current.trim();
     const isEmpty =
       (trimmed === "" || HEADING_ONLY_RE.test(trimmed)) && note.title === null;
-    const bodyChanged = bodyRef.current !== note.initialBody;
+    const bodyChanged = bodyRef.current !== normalizedInitialBodyRef.current;
 
     if (isEmpty) {
       deleteNoteRef.current(note.id);
@@ -210,7 +214,11 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const handleChange = useCallback((markdown: string) => {
     setBody(markdown);
     bodyRef.current = markdown;
-    if (markdown !== activeNoteRef.current?.initialBody) {
+    if (isFirstChangeRef.current) {
+      // Milkdown normalizes content on load — treat its output as the real baseline
+      normalizedInitialBodyRef.current = markdown;
+      isFirstChangeRef.current = false;
+    } else if (markdown !== normalizedInitialBodyRef.current) {
       hasUserEditedRef.current = true;
     }
     if (persistDebounceRef.current) {
