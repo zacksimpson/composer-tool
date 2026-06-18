@@ -9,7 +9,7 @@ import { useComposer } from "@/contexts/ComposerContext";
 import { useInvertColors } from "@/contexts/InvertColorsContext";
 import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
-import { stripMarkdown } from "@/utils/stripMarkdown";
+import { getDisplayTitle, stripMarkdown } from "@/utils/stripMarkdown";
 
 export default function NoteActionsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -53,6 +53,7 @@ export default function NoteActionsScreen() {
     router.push({
       pathname: "/confirm",
       params: {
+        title: getDisplayTitle(note?.title ?? null, note?.body ?? ""),
         message: "Delete this note?",
         confirmText: "Delete",
         action: `delete-note:${id}`,

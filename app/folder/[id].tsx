@@ -104,9 +104,15 @@ export default function FolderDetailScreen() {
   const handleDelete = () => {
     const ids = Array.from(selectedIds);
     const count = ids.length;
+    const firstNote = notes.find((note) => note.id === ids[0]);
+    const title =
+      count === 1
+        ? getDisplayTitle(firstNote?.title ?? null, firstNote?.body ?? "")
+        : `${count} Notes`;
     router.push({
       pathname: "/confirm",
       params: {
+        title,
         message: count === 1 ? "Delete this note?" : `Delete ${count} notes?`,
         confirmText: "Delete",
         action: `delete-notes:${ids.join(",")}`,

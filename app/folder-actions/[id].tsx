@@ -59,6 +59,7 @@ export default function FolderActionsScreen() {
               router.push({
                 pathname: "/confirm",
                 params: {
+                  title: folderName,
                   message: `Delete ${folderName}? Notes inside will not be deleted.`,
                   confirmText: "Delete",
                   action: `delete-folder:${id}`,

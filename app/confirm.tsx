@@ -1,3 +1,4 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -8,6 +9,7 @@ import { useComposer } from "@/contexts/ComposerContext";
 import { useInvertColors } from "@/contexts/InvertColorsContext";
 import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
+import { sharedStyles } from "@/utils/sharedStyles";
 
 export default function ConfirmScreen() {
   const { invertColors } = useInvertColors();
@@ -46,6 +48,25 @@ export default function ConfirmScreen() {
         edges={["top"]}
         style={[styles.container, { backgroundColor: bg }]}
       >
+        <View style={styles.header}>
+          <HapticPressable onPress={goBack}>
+            <View style={sharedStyles.headerBtn}>
+              <MaterialIcons
+                color={textColor}
+                name="arrow-back-ios"
+                size={n(28)}
+              />
+            </View>
+          </HapticPressable>
+          <StyledText
+            numberOfLines={1}
+            style={[styles.headerTitle, { color: textColor }]}
+          >
+            {params.title}
+          </StyledText>
+          <View style={sharedStyles.headerBtn} />
+        </View>
+
         <View style={styles.messageContainer}>
           <StyledText style={[styles.messageText, { color: textColor }]}>
             {params.message}
@@ -64,11 +85,22 @@ export default function ConfirmScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: n(22),
+    paddingVertical: n(5),
+  },
+  headerTitle: {
+    fontSize: n(20),
+    paddingTop: n(2),
+  },
   messageContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "flex-start",
-    paddingTop: n(80),
+    paddingTop: n(40),
     paddingHorizontal: n(40),
   },
   messageText: {
