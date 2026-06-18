@@ -42,13 +42,18 @@ export default function FolderRenameScreen() {
     return null;
   }
 
+  const handleBack = () => {
+    Keyboard.dismiss();
+    goBack();
+  };
+
   return (
-    <SwipeBackContainer onSwipeBack={goBack}>
+    <SwipeBackContainer onSwipeBack={handleBack}>
       <View style={[styles.fill, { backgroundColor: bg }]}>
         <KeyboardAvoidingView behavior="padding" style={styles.fill}>
           <SafeAreaView edges={["top"]} style={styles.fill}>
             <View style={styles.header}>
-              <HapticPressable onPress={goBack}>
+              <HapticPressable onPress={handleBack}>
                 <View style={sharedStyles.headerBtn}>
                   <MaterialIcons
                     color={textColor}
