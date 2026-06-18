@@ -29,7 +29,12 @@ export default function NoteEditorScreen() {
   });
 
   useEffect(() => {
-    const { id: noteId, body: initialBody, title, autoFocus: af } = mountParamsRef.current;
+    const {
+      id: noteId,
+      body: initialBody,
+      title,
+      autoFocus: af,
+    } = mountParamsRef.current;
     openNote({ id: noteId, body: initialBody, title, autoFocus: af });
     return closeNote;
   }, [openNote, closeNote]);

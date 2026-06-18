@@ -32,7 +32,7 @@ function formatDate(ts: number): string {
 export default function FolderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { invertColors } = useInvertColors();
-  const { notes, folders, addNote, deleteNotes, moveNotesToFolder, settings } =
+  const { notes, folders, addNote, moveNotesToFolder, settings } =
     useComposer();
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
@@ -72,15 +72,21 @@ export default function FolderDetailScreen() {
 
   const handleNewNote = () => {
     const noteId = addNote(id);
-    router.push({ pathname: "/note/[id]", params: { id: noteId, autoFocus: "1" } });
+    router.push({
+      pathname: "/note/[id]",
+      params: { id: noteId, autoFocus: "1" },
+    });
   };
 
   const handleNotePress = (noteId: string) => {
     if (isEditMode) {
       setSelectedIds((prev) => {
         const next = new Set(prev);
-        if (next.has(noteId)) next.delete(noteId);
-        else next.add(noteId);
+        if (next.has(noteId)) {
+          next.delete(noteId);
+        } else {
+          next.add(noteId);
+        }
         return next;
       });
     } else {
@@ -120,7 +126,9 @@ export default function FolderDetailScreen() {
     exitEditMode();
   };
 
-  if (!folder) return null;
+  if (!folder) {
+    return null;
+  }
 
   return (
     <SafeAreaView
@@ -129,12 +137,14 @@ export default function FolderDetailScreen() {
     >
       {/* Header */}
       <View style={styles.header}>
-        <HapticPressable onPress={goBack} style={styles.backBtn}>
-          <MaterialIcons
-            color={textColor}
-            name="arrow-back-ios"
-            size={n(28)}
-          />
+        <HapticPressable onPress={goBack}>
+          <View style={styles.headerBtn}>
+            <MaterialIcons
+              color={textColor}
+              name="arrow-back-ios"
+              size={n(28)}
+            />
+          </View>
         </HapticPressable>
         <StyledText
           numberOfLines={1}
@@ -142,17 +152,7 @@ export default function FolderDetailScreen() {
         >
           {folder.name}
         </StyledText>
-        <HapticPressable
-          onPress={() =>
-            router.push({
-              pathname: "/folder-rename/[id]",
-              params: { id },
-            })
-          }
-          style={styles.moreBtn}
-        >
-          <MaterialIcons color={textColor} name="menu" size={n(28)} />
-        </HapticPressable>
+        <View style={styles.headerBtn} />
       </View>
 
       {/* Notes list */}
@@ -193,7 +193,10 @@ export default function FolderDetailScreen() {
                     </View>
                   )}
                   <View style={styles.noteText}>
-                    <StyledText numberOfLines={1} style={styles.noteTitle}>
+                    <StyledText
+                      numberOfLines={1}
+                      style={[styles.noteTitle, { color: textColor }]}
+                    >
                       {getDisplayTitle(note.title, note.body)}
                     </StyledText>
                     <View style={styles.noteMeta}>
@@ -202,7 +205,9 @@ export default function FolderDetailScreen() {
                         size={18}
                         style={styles.editIcon}
                       />
-                      <StyledText style={styles.noteDate}>
+                      <StyledText
+                        style={[styles.noteDate, { color: textColor }]}
+                      >
                         {formatDate(note[sortKey])}
                       </StyledText>
                     </View>
@@ -238,7 +243,6 @@ export default function FolderDetailScreen() {
       <View style={[styles.toolbar, { backgroundColor: bg }]}>
         {isEditMode ? (
           <View style={styles.editToolbar}>
-            {/* DELETE — left */}
             {selectedIds.size > 0 ? (
               <HapticPressable
                 onPress={handleDelete}
@@ -252,12 +256,10 @@ export default function FolderDetailScreen() {
               <View style={styles.editToolbarLeft} />
             )}
 
-            {/* X — center */}
             <HapticPressable onPress={exitEditMode}>
               <MaterialIcons color={textColor} name="close" size={n(40)} />
             </HapticPressable>
 
-            {/* REMOVE — right */}
             {selectedIds.size > 0 ? (
               <HapticPressable
                 onPress={handleRemove}
@@ -304,23 +306,20 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: n(22),
-    paddingTop: n(8),
-    paddingBottom: n(8),
+    paddingVertical: n(5),
   },
-  backBtn: {
-    width: n(36),
+  headerBtn: {
+    width: n(32),
+    height: n(32),
     alignItems: "center",
+    paddingTop: n(6),
+    paddingRight: n(4),
   },
   headerTitle: {
-    flex: 1,
-    fontSize: n(24),
-    fontFamily: "PublicSans-Regular",
-    textAlign: "center",
-  },
-  moreBtn: {
-    width: n(36),
-    alignItems: "center",
+    fontSize: n(20),
+    paddingTop: n(2),
   },
   scrollWrapper: { flex: 1, flexDirection: "row", position: "relative" },
   scrollTrack: scrollIndicatorBaseStyles.track,

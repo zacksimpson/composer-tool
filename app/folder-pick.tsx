@@ -38,19 +38,21 @@ export default function FolderPickScreen() {
     >
       <View style={styles.header}>
         <HapticPressable onPress={goBack}>
-          <MaterialIcons
-            color={textColor}
-            name="arrow-back-ios"
-            size={n(28)}
-          />
+          <View style={styles.headerBtn}>
+            <MaterialIcons
+              color={textColor}
+              name="arrow-back-ios"
+              size={n(28)}
+            />
+          </View>
         </HapticPressable>
         <StyledText style={[styles.headerTitle, { color: textColor }]}>
           Move to Folder
         </StyledText>
-        <View style={styles.headerSpacer} />
+        <View style={styles.headerBtn} />
       </View>
 
-      <View style={styles.list}>
+      <View style={styles.actions}>
         {sorted.map((folder) => (
           <HapticPressable
             key={folder.id}
@@ -78,25 +80,30 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: n(22),
-    paddingTop: n(8),
-    paddingBottom: n(16),
+    paddingVertical: n(5),
+  },
+  headerBtn: {
+    width: n(32),
+    height: n(32),
+    alignItems: "center",
+    paddingTop: n(6),
+    paddingRight: n(4),
   },
   headerTitle: {
-    flex: 1,
-    fontSize: n(22),
-    fontFamily: "PublicSans-Regular",
-    textAlign: "center",
+    fontSize: n(20),
+    paddingTop: n(2),
   },
-  headerSpacer: { width: n(28) },
-  list: {
+  actions: {
     paddingHorizontal: n(22),
+    paddingTop: n(20),
   },
   row: {
-    paddingVertical: n(16),
+    paddingVertical: n(14),
   },
   rowLabel: {
-    fontSize: n(28),
+    fontSize: n(30),
     fontFamily: "PublicSans-Regular",
   },
   emptyText: {

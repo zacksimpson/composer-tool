@@ -23,7 +23,6 @@ export default function FoldersScreen() {
   const textColor = invertColors ? "black" : "white";
 
   const params = useLocalSearchParams<{ startReorder?: string }>();
-
   const [isReordering, setIsReordering] = useState(false);
 
   useEffect(() => {
@@ -42,7 +41,6 @@ export default function FoldersScreen() {
   } = useScrollIndicator();
 
   const sorted = [...folders].sort((a, b) => a.order - b.order);
-
   const noteCountForFolder = (folderId: string) =>
     notes.filter((n) => n.folderId === folderId).length;
 
@@ -53,18 +51,21 @@ export default function FoldersScreen() {
     >
       {/* Header */}
       <View style={styles.header}>
+        <View style={styles.headerBtn} />
         <StyledText style={[styles.headerTitle, { color: textColor }]}>
           Folders
         </StyledText>
         {isReordering ? (
           <HapticPressable onPress={() => setIsReordering(false)}>
-            <StyledText style={[styles.doneBtn, { color: textColor }]}>
-              DONE
-            </StyledText>
+            <View style={styles.headerBtn}>
+              <MaterialIcons color={textColor} name="check" size={n(28)} />
+            </View>
           </HapticPressable>
         ) : (
           <HapticPressable onPress={() => router.push("/folder-new")}>
-            <MaterialIcons color={textColor} name="add" size={n(36)} />
+            <View style={styles.headerBtn}>
+              <MaterialIcons color={textColor} name="add" size={n(28)} />
+            </View>
           </HapticPressable>
         )}
       </View>
@@ -146,12 +147,6 @@ export default function FoldersScreen() {
                 </HapticPressable>
               );
             })}
-
-            {folders.length === 0 && (
-              <StyledText style={[styles.emptyText, { color: textColor }]}>
-                No folders yet
-              </StyledText>
-            )}
           </View>
         </Animated.ScrollView>
 
@@ -176,13 +171,11 @@ export default function FoldersScreen() {
         <HapticPressable onPress={() => router.push("/settings")}>
           <SettingsIcon color={textColor} size={40} />
         </HapticPressable>
-
         <HapticPressable onPress={() => router.replace("/")}>
           <StyledText style={[styles.toolbarLabel, { color: textColor }]}>
             NOTES
           </StyledText>
         </HapticPressable>
-
         <HapticPressable
           onPress={() => {
             const id = addNote();
@@ -206,17 +199,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: n(22),
-    paddingTop: n(16),
-    paddingBottom: n(8),
+    paddingVertical: n(5),
+  },
+  headerBtn: {
+    width: n(32),
+    height: n(32),
+    alignItems: "center",
+    paddingTop: n(6),
+    paddingRight: n(4),
   },
   headerTitle: {
-    fontSize: n(32),
-    fontFamily: "PublicSans-Regular",
-  },
-  doneBtn: {
-    fontFamily: "PublicSans-Regular",
-    fontSize: n(22),
-    letterSpacing: n(2),
+    fontSize: n(20),
+    paddingTop: n(2),
   },
   scrollWrapper: { flex: 1, flexDirection: "row", position: "relative" },
   scrollTrack: scrollIndicatorBaseStyles.track,
@@ -224,29 +218,24 @@ const styles = StyleSheet.create({
   folderRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: n(22),
+    paddingHorizontal: n(26),
     paddingVertical: n(11),
   },
   folderName: {
-    fontSize: n(30),
+    fontSize: n(24),
+    letterSpacing: n(0.5),
     flex: 1,
   },
   folderCount: {
-    fontSize: n(20),
+    fontSize: n(16),
   },
   arrowGroup: {
     flexDirection: "row",
     gap: n(8),
-    paddingRight: n(12),
+    paddingRight: n(4),
   },
   arrowDisabled: {
     opacity: 0.2,
-  },
-  emptyText: {
-    fontSize: n(20),
-    paddingHorizontal: n(22),
-    paddingTop: n(20),
-    opacity: 0.5,
   },
   toolbar: {
     flexDirection: "row",

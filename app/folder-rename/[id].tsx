@@ -1,6 +1,12 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
-import { KeyboardAvoidingView, StyleSheet, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HapticPressable } from "@/components/HapticPressable";
 import { StyledText } from "@/components/StyledText";
@@ -22,35 +28,44 @@ export default function FolderRenameScreen() {
   const canSave = name.trim().length > 0;
 
   const handleSave = useCallback(() => {
-    if (!canSave) return;
+    if (!canSave) {
+      return;
+    }
     renameFolder(id, name.trim());
     router.navigate("/folders");
   }, [canSave, id, name, renameFolder]);
 
-  if (!folder) return null;
+  if (!folder) {
+    return null;
+  }
 
   return (
     <SwipeBackContainer onSwipeBack={goBack}>
       <View style={[styles.fill, { backgroundColor: bg }]}>
         <KeyboardAvoidingView behavior="padding" style={styles.fill}>
           <SafeAreaView edges={["top"]} style={styles.fill}>
-            {/* Header */}
             <View style={styles.header}>
-              <HapticPressable onPress={goBack} style={styles.headerSide}>
-                <StyledText style={[styles.headerAction, { color: textColor }]}>
-                  Cancel
-                </StyledText>
+              <HapticPressable onPress={goBack}>
+                <View style={styles.headerBtn}>
+                  <MaterialIcons
+                    color={textColor}
+                    name="arrow-back-ios"
+                    size={n(28)}
+                  />
+                </View>
               </HapticPressable>
               <StyledText style={[styles.headerTitle, { color: textColor }]}>
                 Rename
               </StyledText>
-              <HapticPressable
-                onPress={handleSave}
-                style={[styles.headerSide, styles.headerRight, !canSave && styles.disabled]}
-              >
-                <StyledText style={[styles.headerAction, { color: textColor }]}>
-                  Save
-                </StyledText>
+              <HapticPressable onPress={handleSave}>
+                <View style={styles.headerBtn}>
+                  <MaterialIcons
+                    color={textColor}
+                    name="check"
+                    size={n(28)}
+                    style={{ opacity: canSave ? 1 : 0.3 }}
+                  />
+                </View>
               </HapticPressable>
             </View>
 
@@ -61,9 +76,13 @@ export default function FolderRenameScreen() {
                 cursorColor={textColor}
                 onChangeText={setName}
                 onSubmitEditing={handleSave}
+                paddingLeft={0}
                 returnKeyType="done"
                 selectionColor={textColor}
-                style={[styles.input, { color: textColor }]}
+                style={[
+                  styles.input,
+                  { color: textColor, borderBottomColor: textColor },
+                ]}
                 value={name}
               />
             </View>
@@ -81,27 +100,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: n(22),
-    paddingTop: n(8),
-    paddingBottom: n(8),
+    paddingVertical: n(5),
+  },
+  headerBtn: {
+    width: n(32),
+    height: n(32),
+    alignItems: "center",
+    paddingTop: n(6),
+    paddingRight: n(4),
   },
   headerTitle: {
-    fontSize: n(22),
-    fontFamily: "PublicSans-Regular",
-  },
-  headerAction: {
     fontSize: n(20),
-    fontFamily: "PublicSans-Regular",
+    paddingTop: n(2),
   },
-  headerSide: { minWidth: n(60) },
-  headerRight: { alignItems: "flex-end" },
-  disabled: { opacity: 0.3 },
   inputArea: {
-    paddingHorizontal: n(22),
+    paddingHorizontal: n(26),
     paddingTop: n(24),
   },
   input: {
-    fontSize: n(30),
     fontFamily: "PublicSans-Regular",
+    fontSize: n(30),
     paddingBottom: n(8),
+    borderBottomWidth: n(1),
   },
 });

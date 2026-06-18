@@ -61,9 +61,18 @@ function withAndroidThemeStyles(config) {
       setItem("colorControlHighlight", "@color/colorAccent");
       // Override WebView text selection handles with white drawables.
       // colorAccent alone does not tint WebView handles — these theme attrs do.
-      setItem("android:textSelectHandle", "@drawable/text_select_handle_middle");
-      setItem("android:textSelectHandleLeft", "@drawable/text_select_handle_left");
-      setItem("android:textSelectHandleRight", "@drawable/text_select_handle_right");
+      setItem(
+        "android:textSelectHandle",
+        "@drawable/text_select_handle_middle"
+      );
+      setItem(
+        "android:textSelectHandleLeft",
+        "@drawable/text_select_handle_left"
+      );
+      setItem(
+        "android:textSelectHandleRight",
+        "@drawable/text_select_handle_right"
+      );
     }
 
     const splashTheme = styles.find(

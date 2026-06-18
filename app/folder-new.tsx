@@ -1,9 +1,15 @@
-import { router } from "expo-router";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useRef, useState } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HapticPressable } from "@/components/HapticPressable";
 import { StyledText } from "@/components/StyledText";
+import { SwipeBackContainer } from "@/components/SwipeBackContainer";
 import { useComposer } from "@/contexts/ComposerContext";
 import { useInvertColors } from "@/contexts/InvertColorsContext";
 import { goBack } from "@/utils/navigation";
@@ -17,89 +23,100 @@ export default function FolderNewScreen() {
 
   const [name, setName] = useState("");
   const inputRef = useRef<TextInput>(null);
+  const canSave = name.trim().length > 0;
 
   const handleSave = () => {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    addFolder(trimmed);
+    if (!canSave) {
+      return;
+    }
+    addFolder(name.trim());
     goBack();
   };
 
   return (
-    <SafeAreaView
-      edges={["top"]}
-      style={[styles.container, { backgroundColor: bg }]}
-    >
-      <View style={styles.header}>
-        <HapticPressable onPress={goBack} style={styles.cancelBtn}>
-          <StyledText style={[styles.headerAction, { color: textColor }]}>
-            Cancel
-          </StyledText>
-        </HapticPressable>
-        <StyledText style={[styles.headerTitle, { color: textColor }]}>
-          New Folder
-        </StyledText>
-        <HapticPressable
-          onPress={handleSave}
-          style={[styles.saveBtn, !name.trim() && styles.disabled]}
-        >
-          <StyledText style={[styles.headerAction, { color: textColor }]}>
-            Save
-          </StyledText>
-        </HapticPressable>
-      </View>
+    <SwipeBackContainer onSwipeBack={goBack}>
+      <View style={[styles.fill, { backgroundColor: bg }]}>
+        <KeyboardAvoidingView behavior="padding" style={styles.fill}>
+          <SafeAreaView edges={["top"]} style={styles.fill}>
+            <View style={styles.header}>
+              <HapticPressable onPress={goBack}>
+                <View style={styles.headerBtn}>
+                  <MaterialIcons
+                    color={textColor}
+                    name="arrow-back-ios"
+                    size={n(28)}
+                  />
+                </View>
+              </HapticPressable>
+              <StyledText style={[styles.headerTitle, { color: textColor }]}>
+                New Folder
+              </StyledText>
+              <HapticPressable onPress={handleSave}>
+                <View style={styles.headerBtn}>
+                  <MaterialIcons
+                    color={textColor}
+                    name="check"
+                    size={n(28)}
+                    style={{ opacity: canSave ? 1 : 0.3 }}
+                  />
+                </View>
+              </HapticPressable>
+            </View>
 
-      <TextInput
-        ref={inputRef}
-        allowFontScaling={false}
-        autoFocus
-        cursorColor={textColor}
-        onChangeText={setName}
-        onSubmitEditing={handleSave}
-        placeholderTextColor={textColor}
-        returnKeyType="done"
-        selectionColor={textColor}
-        style={[styles.input, { color: textColor }]}
-        value={name}
-      />
-    </SafeAreaView>
+            <View style={styles.inputArea}>
+              <TextInput
+                allowFontScaling={false}
+                autoFocus
+                cursorColor={textColor}
+                onChangeText={setName}
+                onSubmitEditing={handleSave}
+                paddingLeft={0}
+                placeholderTextColor={textColor}
+                ref={inputRef}
+                returnKeyType="done"
+                selectionColor={textColor}
+                style={[
+                  styles.input,
+                  { color: textColor, borderBottomColor: textColor },
+                ]}
+                value={name}
+              />
+            </View>
+          </SafeAreaView>
+        </KeyboardAvoidingView>
+      </View>
+    </SwipeBackContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  fill: { flex: 1 },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: n(22),
-    paddingTop: n(16),
-    paddingBottom: n(16),
+    paddingVertical: n(5),
+  },
+  headerBtn: {
+    width: n(32),
+    height: n(32),
+    alignItems: "center",
+    paddingTop: n(6),
+    paddingRight: n(4),
   },
   headerTitle: {
-    fontSize: n(22),
-    fontFamily: "PublicSans-Regular",
-  },
-  headerAction: {
     fontSize: n(20),
-    fontFamily: "PublicSans-Regular",
+    paddingTop: n(2),
   },
-  cancelBtn: {
-    minWidth: n(60),
-  },
-  saveBtn: {
-    minWidth: n(60),
-    alignItems: "flex-end",
-  },
-  disabled: {
-    opacity: 0.3,
+  inputArea: {
+    paddingHorizontal: n(26),
+    paddingTop: n(24),
   },
   input: {
     fontFamily: "PublicSans-Regular",
-    fontSize: n(28),
-    paddingHorizontal: n(22),
-    paddingTop: n(8),
-    paddingLeft: 0,
-    marginLeft: n(22),
+    fontSize: n(30),
+    paddingBottom: n(8),
+    borderBottomWidth: n(1),
   },
 });

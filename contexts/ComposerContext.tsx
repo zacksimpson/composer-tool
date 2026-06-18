@@ -101,17 +101,17 @@ interface ComposerContextType {
   addFolder: (name: string) => void;
   addNote: (folderId?: string | null) => string;
   deleteFolder: (id: string) => void;
-  moveFolderDown: (id: string) => void;
-  moveFolderUp: (id: string) => void;
   deleteNote: (id: string) => void;
   deleteNotes: (ids: string[]) => void;
   folders: Folder[];
   loaded: boolean;
+  moveFolderDown: (id: string) => void;
+  moveFolderUp: (id: string) => void;
   moveNotesToFolder: (noteIds: string[], folderId: string | null) => void;
   notes: Note[];
-  reorderFolders: (orderedIds: string[]) => void;
   renameFolder: (id: string, name: string) => void;
   renameNote: (id: string, title: string | null) => void;
+  reorderFolders: (orderedIds: string[]) => void;
   settings: ComposerSettings;
   updateNote: (
     id: string,
@@ -290,10 +290,16 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     (id: string) => {
       const sorted = [...folders].sort((a, b) => a.order - b.order);
       const idx = sorted.findIndex((f) => f.id === id);
-      if (idx <= 0) return;
+      if (idx <= 0) {
+        return;
+      }
       const next = sorted.map((f, i) => {
-        if (i === idx - 1) return { ...f, order: sorted[idx].order };
-        if (i === idx) return { ...f, order: sorted[idx - 1].order };
+        if (i === idx - 1) {
+          return { ...f, order: sorted[idx].order };
+        }
+        if (i === idx) {
+          return { ...f, order: sorted[idx - 1].order };
+        }
         return f;
       });
       persistFolders(next);
@@ -305,10 +311,16 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     (id: string) => {
       const sorted = [...folders].sort((a, b) => a.order - b.order);
       const idx = sorted.findIndex((f) => f.id === id);
-      if (idx < 0 || idx >= sorted.length - 1) return;
+      if (idx < 0 || idx >= sorted.length - 1) {
+        return;
+      }
       const next = sorted.map((f, i) => {
-        if (i === idx) return { ...f, order: sorted[idx + 1].order };
-        if (i === idx + 1) return { ...f, order: sorted[idx].order };
+        if (i === idx) {
+          return { ...f, order: sorted[idx + 1].order };
+        }
+        if (i === idx + 1) {
+          return { ...f, order: sorted[idx].order };
+        }
         return f;
       });
       persistFolders(next);

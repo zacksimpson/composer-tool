@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HapticPressable } from "@/components/HapticPressable";
 import { StyledText } from "@/components/StyledText";
@@ -25,56 +25,54 @@ export default function FolderActionsScreen() {
         edges={["top"]}
         style={[styles.container, { backgroundColor: bg }]}
       >
-        <StyledText style={[styles.title, { color: textColor }]}>
-          {folderName}
-        </StyledText>
+        <View style={styles.actions}>
+          <HapticPressable
+            onPress={() =>
+              router.push({
+                pathname: "/folder-rename/[id]",
+                params: { id },
+              })
+            }
+            style={styles.row}
+          >
+            <StyledText style={[styles.rowLabel, { color: textColor }]}>
+              Rename
+            </StyledText>
+          </HapticPressable>
 
-        <HapticPressable
-          onPress={() =>
-            router.push({
-              pathname: "/folder-rename/[id]",
-              params: { id },
-            })
-          }
-          style={styles.option}
-        >
-          <StyledText style={[styles.optionText, { color: textColor }]}>
-            Rename
-          </StyledText>
-        </HapticPressable>
+          <HapticPressable
+            onPress={() =>
+              router.replace({
+                pathname: "/folders",
+                params: { startReorder: "true" },
+              })
+            }
+            style={styles.row}
+          >
+            <StyledText style={[styles.rowLabel, { color: textColor }]}>
+              Reorder Folders
+            </StyledText>
+          </HapticPressable>
 
-        <HapticPressable
-          onPress={() =>
-            router.replace({
-              pathname: "/folders",
-              params: { startReorder: "true" },
-            })
-          }
-          style={styles.option}
-        >
-          <StyledText style={[styles.optionText, { color: textColor }]}>
-            Reorder Folders
-          </StyledText>
-        </HapticPressable>
-
-        <HapticPressable
-          onPress={() =>
-            router.push({
-              pathname: "/confirm",
-              params: {
-                message: `Delete ${folderName}? Notes inside will not be deleted.`,
-                confirmText: "Delete",
-                action: `delete-folder:${id}`,
-                returnPath: "/folders",
-              },
-            })
-          }
-          style={styles.option}
-        >
-          <StyledText style={[styles.optionText, { color: textColor }]}>
-            Delete
-          </StyledText>
-        </HapticPressable>
+          <HapticPressable
+            onPress={() =>
+              router.push({
+                pathname: "/confirm",
+                params: {
+                  message: `Delete ${folderName}? Notes inside will not be deleted.`,
+                  confirmText: "Delete",
+                  action: `delete-folder:${id}`,
+                  returnPath: "/folders",
+                },
+              })
+            }
+            style={styles.row}
+          >
+            <StyledText style={[styles.rowLabel, { color: textColor }]}>
+              Delete
+            </StyledText>
+          </HapticPressable>
+        </View>
       </SafeAreaView>
     </SwipeBackContainer>
   );
@@ -82,18 +80,14 @@ export default function FolderActionsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  title: {
-    fontSize: n(30),
-    fontFamily: "PublicSans-Regular",
+  actions: {
     paddingHorizontal: n(22),
     paddingTop: n(20),
-    paddingBottom: n(8),
   },
-  option: {
-    paddingHorizontal: n(22),
+  row: {
     paddingVertical: n(14),
   },
-  optionText: {
+  rowLabel: {
     fontSize: n(30),
     fontFamily: "PublicSans-Regular",
   },

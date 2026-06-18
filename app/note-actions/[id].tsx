@@ -11,7 +11,6 @@ import { goBack } from "@/utils/navigation";
 import { n } from "@/utils/scaling";
 import { stripMarkdown } from "@/utils/stripMarkdown";
 
-
 export default function NoteActionsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { invertColors } = useInvertColors();

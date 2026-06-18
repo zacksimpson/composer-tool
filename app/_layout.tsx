@@ -3,7 +3,11 @@ import { router, Stack, usePathname } from "expo-router";
 import { hideAsync, preventAutoHideAsync } from "expo-splash-screen";
 import { useEffect, useMemo, useRef } from "react";
 import { Animated, StatusBar, StyleSheet, View } from "react-native";
-import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
 import { MILKDOWN_EDITOR_HTML } from "@/assets/milkdown-editor";
@@ -67,10 +71,14 @@ function RootLayout() {
           swipeTriggeredRef.current = false;
         })
         .onUpdate((event) => {
-          if (swipeTriggeredRef.current) return;
+          if (swipeTriggeredRef.current) {
+            return;
+          }
           const absX = Math.abs(event.translationX);
           const absY = Math.abs(event.translationY);
-          if (absY > absX * 1.5) return;
+          if (absY > absX * 1.5) {
+            return;
+          }
           if (event.translationX > 80) {
             swipeTriggeredRef.current = true;
             triggerHaptic();
@@ -160,21 +168,31 @@ function RootLayout() {
           flicker that plagued the useIsFocused approach in release builds. */}
       {isNoteScreen && (
         <View
-          style={[
-            styles.noteHeader,
-            { top: insets.top, backgroundColor: bg },
-          ]}
+          style={[styles.noteHeader, { top: insets.top, backgroundColor: bg }]}
         >
           <HapticPressable
-            onPress={() => { dismissKeyboard(); goBack(); }}
+            onPress={() => {
+              dismissKeyboard();
+              goBack();
+            }}
           >
             <View style={styles.headerBtn}>
-              <MaterialIcons color={textColor} name="arrow-back-ios" size={n(28)} />
+              <MaterialIcons
+                color={textColor}
+                name="arrow-back-ios"
+                size={n(28)}
+              />
             </View>
           </HapticPressable>
 
           <HapticPressable
-            onPress={() => activeNote && router.push({ pathname: "/note-rename/[id]", params: { id: activeNote.id } })}
+            onPress={() =>
+              activeNote &&
+              router.push({
+                pathname: "/note-rename/[id]",
+                params: { id: activeNote.id },
+              })
+            }
             style={styles.titlePressable}
           >
             <StyledText numberOfLines={1} style={styles.titleText}>
@@ -185,12 +203,22 @@ function RootLayout() {
           {keyboardVisible ? (
             <HapticPressable onPress={dismissKeyboard}>
               <View style={styles.headerBtn}>
-                <MaterialIcons color={textColor} name="keyboard-arrow-down" size={n(28)} />
+                <MaterialIcons
+                  color={textColor}
+                  name="keyboard-arrow-down"
+                  size={n(28)}
+                />
               </View>
             </HapticPressable>
           ) : (
             <HapticPressable
-              onPress={() => activeNote && router.push({ pathname: "/note-actions/[id]", params: { id: activeNote.id } })}
+              onPress={() =>
+                activeNote &&
+                router.push({
+                  pathname: "/note-actions/[id]",
+                  params: { id: activeNote.id },
+                })
+              }
             >
               <View style={styles.headerBtn}>
                 <MaterialIcons color={textColor} name="menu" size={n(28)} />
