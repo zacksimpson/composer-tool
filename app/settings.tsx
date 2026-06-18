@@ -92,12 +92,6 @@ export default function SettingsScreen() {
             </StyledText>
           </HapticPressable>
 
-          <ToggleSwitch
-            label="Inverted Colors"
-            onValueChange={setInvertColors}
-            value={invertColors}
-          />
-
           <HapticPressable onPress={handleExportNotes} style={styles.row}>
             <StyledText style={[styles.rowLabel, { color: textColor }]}>
               Export Notes
@@ -106,6 +100,14 @@ export default function SettingsScreen() {
               Copy All as Text
             </StyledText>
           </HapticPressable>
+
+          <View style={styles.toggleRow}>
+            <ToggleSwitch
+              label="Inverted Colors"
+              onValueChange={setInvertColors}
+              value={invertColors}
+            />
+          </View>
         </View>
       </SafeAreaView>
 
@@ -146,6 +148,9 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "flex-start",
     paddingVertical: n(16),
+  },
+  toggleRow: {
+    paddingTop: n(7),
   },
   rowLabel: {
     fontSize: n(20),

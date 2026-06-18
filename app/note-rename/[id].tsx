@@ -55,16 +55,15 @@ export default function NoteRenameScreen() {
           <StyledText style={[styles.headerTitle, { color: textColor }]}>
             Edit Note Title
           </StyledText>
-          <HapticPressable disabled={!canSave} onPress={handleSave}>
-            <View style={styles.headerBtn}>
-              <MaterialIcons
-                color={textColor}
-                name="check"
-                size={n(28)}
-                style={{ opacity: canSave ? 1 : 0.3 }}
-              />
-            </View>
-          </HapticPressable>
+          {canSave ? (
+            <HapticPressable onPress={handleSave}>
+              <View style={styles.headerBtn}>
+                <MaterialIcons color={textColor} name="check" size={n(28)} />
+              </View>
+            </HapticPressable>
+          ) : (
+            <View style={styles.headerBtn} />
+          )}
         </View>
 
         {/* Input */}
