@@ -17,8 +17,7 @@ import { n } from "@/utils/scaling";
 
 export default function FoldersScreen() {
   const { invertColors } = useInvertColors();
-  const { folders, notes, addNote, moveFolderUp, moveFolderDown } =
-    useComposer();
+  const { folders, addNote, moveFolderUp, moveFolderDown } = useComposer();
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
 
@@ -41,8 +40,6 @@ export default function FoldersScreen() {
   } = useScrollIndicator();
 
   const sorted = [...folders].sort((a, b) => a.order - b.order);
-  const noteCountForFolder = (folderId: string) =>
-    notes.filter((n) => n.folderId === folderId).length;
 
   return (
     <SafeAreaView
@@ -80,73 +77,64 @@ export default function FoldersScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View onLayout={(e) => setContentHeight(e.nativeEvent.layout.height)}>
-            {sorted.map((folder, idx) => {
-              const count = noteCountForFolder(folder.id);
-              return (
-                <HapticPressable
-                  delayLongPress={400}
-                  key={folder.id}
-                  onLongPress={() => {
-                    if (!isReordering) {
-                      router.push({
-                        pathname: "/folder-actions/[id]",
-                        params: { id: folder.id },
-                      });
-                    }
-                  }}
-                  onPress={() => {
-                    if (!isReordering) {
-                      router.push({
-                        pathname: "/folder/[id]",
-                        params: { id: folder.id },
-                      });
-                    }
-                  }}
-                  style={styles.folderRow}
+            {sorted.map((folder, idx) => (
+              <HapticPressable
+                delayLongPress={400}
+                key={folder.id}
+                onLongPress={() => {
+                  if (!isReordering) {
+                    router.push({
+                      pathname: "/folder-actions/[id]",
+                      params: { id: folder.id },
+                    });
+                  }
+                }}
+                onPress={() => {
+                  if (!isReordering) {
+                    router.push({
+                      pathname: "/folder/[id]",
+                      params: { id: folder.id },
+                    });
+                  }
+                }}
+                style={styles.folderRow}
+              >
+                <StyledText
+                  numberOfLines={1}
+                  style={[styles.folderName, { color: textColor }]}
                 >
-                  <StyledText
-                    numberOfLines={1}
-                    style={[styles.folderName, { color: textColor }]}
-                  >
-                    {folder.name}
-                  </StyledText>
-                  {isReordering ? (
-                    <View style={styles.arrowGroup}>
-                      <HapticPressable
-                        disabled={idx === 0}
-                        onPress={() => moveFolderUp(folder.id)}
-                      >
-                        <MaterialIcons
-                          color={textColor}
-                          name="keyboard-arrow-up"
-                          size={n(32)}
-                          style={idx === 0 && styles.arrowDisabled}
-                        />
-                      </HapticPressable>
-                      <HapticPressable
-                        disabled={idx === sorted.length - 1}
-                        onPress={() => moveFolderDown(folder.id)}
-                      >
-                        <MaterialIcons
-                          color={textColor}
-                          name="keyboard-arrow-down"
-                          size={n(32)}
-                          style={
-                            idx === sorted.length - 1 && styles.arrowDisabled
-                          }
-                        />
-                      </HapticPressable>
-                    </View>
-                  ) : (
-                    <StyledText
-                      style={[styles.folderCount, { color: textColor }]}
+                  {folder.name}
+                </StyledText>
+                {isReordering && (
+                  <View style={styles.arrowGroup}>
+                    <HapticPressable
+                      disabled={idx === 0}
+                      onPress={() => moveFolderUp(folder.id)}
                     >
-                      {count}
-                    </StyledText>
-                  )}
-                </HapticPressable>
-              );
-            })}
+                      <MaterialIcons
+                        color={textColor}
+                        name="keyboard-arrow-up"
+                        size={n(32)}
+                        style={idx === 0 && styles.arrowDisabled}
+                      />
+                    </HapticPressable>
+                    <HapticPressable
+                      disabled={idx === sorted.length - 1}
+                      onPress={() => moveFolderDown(folder.id)}
+                    >
+                      <MaterialIcons
+                        color={textColor}
+                        name="keyboard-arrow-down"
+                        size={n(32)}
+                        style={
+                          idx === sorted.length - 1 && styles.arrowDisabled
+                        }
+                      />
+                    </HapticPressable>
+                  </View>
+                )}
+              </HapticPressable>
+            ))}
           </View>
         </Animated.ScrollView>
 
@@ -225,9 +213,6 @@ const styles = StyleSheet.create({
     fontSize: n(24),
     letterSpacing: n(0.5),
     flex: 1,
-  },
-  folderCount: {
-    fontSize: n(16),
   },
   arrowGroup: {
     flexDirection: "row",

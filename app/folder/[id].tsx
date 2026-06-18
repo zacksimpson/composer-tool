@@ -8,6 +8,7 @@ import { NoteEditIcon } from "@/components/NoteEditIcon";
 import { PlusEditIcon } from "@/components/PlusEditIcon";
 import { SettingsIcon } from "@/components/SettingsIcon";
 import { StyledText } from "@/components/StyledText";
+import { SwipeBackContainer } from "@/components/SwipeBackContainer";
 import { Toast } from "@/components/Toast";
 import { useComposer } from "@/contexts/ComposerContext";
 import { useInvertColors } from "@/contexts/InvertColorsContext";
@@ -131,173 +132,181 @@ export default function FolderDetailScreen() {
   }
 
   return (
-    <SafeAreaView
-      edges={["top"]}
-      style={[styles.container, { backgroundColor: bg }]}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <HapticPressable onPress={goBack}>
-          <View style={styles.headerBtn}>
-            <MaterialIcons
-              color={textColor}
-              name="arrow-back-ios"
-              size={n(28)}
-            />
-          </View>
-        </HapticPressable>
-        <StyledText
-          numberOfLines={1}
-          style={[styles.headerTitle, { color: textColor }]}
-        >
-          {folder.name}
-        </StyledText>
-        <View style={styles.headerBtn} />
-      </View>
+    <SwipeBackContainer onSwipeBack={goBack}>
+      <SafeAreaView
+        edges={["top"]}
+        style={[styles.container, { backgroundColor: bg }]}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <HapticPressable onPress={goBack}>
+            <View style={styles.headerBtn}>
+              <MaterialIcons
+                color={textColor}
+                name="arrow-back-ios"
+                size={n(28)}
+              />
+            </View>
+          </HapticPressable>
+          <StyledText
+            numberOfLines={1}
+            style={[styles.headerTitle, { color: textColor }]}
+          >
+            {folder.name}
+          </StyledText>
+          <View style={styles.headerBtn} />
+        </View>
 
-      {/* Notes list */}
-      <View style={styles.scrollWrapper}>
-        <Animated.ScrollView
-          keyboardShouldPersistTaps="handled"
-          onLayout={(e) => setScrollViewHeight(e.nativeEvent.layout.height)}
-          onScroll={handleScroll}
-          overScrollMode="never"
-          scrollEventThrottle={16}
-          showsVerticalScrollIndicator={false}
-        >
-          <View onLayout={(e) => setContentHeight(e.nativeEvent.layout.height)}>
-            {sorted.map((note) => {
-              const isSelected = selectedIds.has(note.id);
-              return (
-                <HapticPressable
-                  key={note.id}
-                  onLongPress={() => handleNoteLongPress(note.id)}
-                  onPress={() => handleNotePress(note.id)}
-                  style={styles.noteRow}
-                >
-                  {isEditMode && (
-                    <View style={styles.checkboxArea}>
-                      {isSelected ? (
-                        <MaterialIcons
-                          color={textColor}
-                          name="check-box"
-                          size={n(24)}
-                        />
-                      ) : (
-                        <MaterialIcons
-                          color={textColor}
-                          name="check-box-outline-blank"
-                          size={n(24)}
-                        />
-                      )}
-                    </View>
-                  )}
-                  <View style={styles.noteText}>
-                    <StyledText
-                      numberOfLines={1}
-                      style={[styles.noteTitle, { color: textColor }]}
-                    >
-                      {getDisplayTitle(note.title, note.body)}
-                    </StyledText>
-                    <View style={styles.noteMeta}>
-                      <NoteEditIcon
-                        color={textColor}
-                        size={18}
-                        style={styles.editIcon}
-                      />
+        {/* Notes list */}
+        <View style={styles.scrollWrapper}>
+          <Animated.ScrollView
+            keyboardShouldPersistTaps="handled"
+            onLayout={(e) => setScrollViewHeight(e.nativeEvent.layout.height)}
+            onScroll={handleScroll}
+            overScrollMode="never"
+            scrollEventThrottle={16}
+            showsVerticalScrollIndicator={false}
+          >
+            <View
+              onLayout={(e) => setContentHeight(e.nativeEvent.layout.height)}
+            >
+              {sorted.map((note) => {
+                const isSelected = selectedIds.has(note.id);
+                return (
+                  <HapticPressable
+                    key={note.id}
+                    onLongPress={() => handleNoteLongPress(note.id)}
+                    onPress={() => handleNotePress(note.id)}
+                    style={styles.noteRow}
+                  >
+                    {isEditMode && (
+                      <View style={styles.checkboxArea}>
+                        {isSelected ? (
+                          <MaterialIcons
+                            color={textColor}
+                            name="check-box"
+                            size={n(24)}
+                          />
+                        ) : (
+                          <MaterialIcons
+                            color={textColor}
+                            name="check-box-outline-blank"
+                            size={n(24)}
+                          />
+                        )}
+                      </View>
+                    )}
+                    <View style={styles.noteText}>
                       <StyledText
-                        style={[styles.noteDate, { color: textColor }]}
+                        numberOfLines={1}
+                        style={[styles.noteTitle, { color: textColor }]}
                       >
-                        {formatDate(note[sortKey])}
+                        {getDisplayTitle(note.title, note.body)}
                       </StyledText>
+                      <View style={styles.noteMeta}>
+                        <NoteEditIcon
+                          color={textColor}
+                          size={18}
+                          style={styles.editIcon}
+                        />
+                        <StyledText
+                          style={[styles.noteDate, { color: textColor }]}
+                        >
+                          {formatDate(note[sortKey])}
+                        </StyledText>
+                      </View>
                     </View>
-                  </View>
+                  </HapticPressable>
+                );
+              })}
+              {sorted.length === 0 && (
+                <StyledText style={[styles.emptyText, { color: textColor }]}>
+                  No notes in this folder
+                </StyledText>
+              )}
+            </View>
+          </Animated.ScrollView>
+
+          {scrollIndicatorHeight > 0 && (
+            <View style={[styles.scrollTrack, { backgroundColor: textColor }]}>
+              <Animated.View
+                style={[
+                  styles.scrollThumb,
+                  {
+                    backgroundColor: textColor,
+                    height: scrollIndicatorHeight,
+                    transform: [{ translateY: scrollIndicatorPosition }],
+                  },
+                ]}
+              />
+            </View>
+          )}
+        </View>
+
+        {/* Bottom toolbar */}
+        <View style={[styles.toolbar, { backgroundColor: bg }]}>
+          {isEditMode ? (
+            <View style={styles.editToolbar}>
+              {selectedIds.size > 0 ? (
+                <HapticPressable
+                  onPress={handleDelete}
+                  style={styles.editToolbarLeft}
+                >
+                  <StyledText
+                    style={[styles.toolbarLabel, { color: textColor }]}
+                  >
+                    DELETE
+                  </StyledText>
                 </HapticPressable>
-              );
-            })}
-            {sorted.length === 0 && (
-              <StyledText style={[styles.emptyText, { color: textColor }]}>
-                No notes in this folder
-              </StyledText>
-            )}
-          </View>
-        </Animated.ScrollView>
+              ) : (
+                <View style={styles.editToolbarLeft} />
+              )}
 
-        {scrollIndicatorHeight > 0 && (
-          <View style={[styles.scrollTrack, { backgroundColor: textColor }]}>
-            <Animated.View
-              style={[
-                styles.scrollThumb,
-                {
-                  backgroundColor: textColor,
-                  height: scrollIndicatorHeight,
-                  transform: [{ translateY: scrollIndicatorPosition }],
-                },
-              ]}
-            />
-          </View>
-        )}
-      </View>
+              <HapticPressable onPress={exitEditMode}>
+                <MaterialIcons color={textColor} name="close" size={n(40)} />
+              </HapticPressable>
 
-      {/* Bottom toolbar */}
-      <View style={[styles.toolbar, { backgroundColor: bg }]}>
-        {isEditMode ? (
-          <View style={styles.editToolbar}>
-            {selectedIds.size > 0 ? (
-              <HapticPressable
-                onPress={handleDelete}
-                style={styles.editToolbarLeft}
-              >
+              {selectedIds.size > 0 ? (
+                <HapticPressable
+                  onPress={handleRemove}
+                  style={styles.editToolbarRight}
+                >
+                  <StyledText
+                    style={[styles.toolbarLabel, { color: textColor }]}
+                  >
+                    REMOVE
+                  </StyledText>
+                </HapticPressable>
+              ) : (
+                <View style={styles.editToolbarRight} />
+              )}
+            </View>
+          ) : (
+            <>
+              <HapticPressable onPress={() => router.push("/settings")}>
+                <SettingsIcon color={textColor} size={40} />
+              </HapticPressable>
+
+              <HapticPressable onPress={() => router.replace("/")}>
                 <StyledText style={[styles.toolbarLabel, { color: textColor }]}>
-                  DELETE
+                  NOTES
                 </StyledText>
               </HapticPressable>
-            ) : (
-              <View style={styles.editToolbarLeft} />
-            )}
 
-            <HapticPressable onPress={exitEditMode}>
-              <MaterialIcons color={textColor} name="close" size={n(40)} />
-            </HapticPressable>
-
-            {selectedIds.size > 0 ? (
-              <HapticPressable
-                onPress={handleRemove}
-                style={styles.editToolbarRight}
-              >
-                <StyledText style={[styles.toolbarLabel, { color: textColor }]}>
-                  REMOVE
-                </StyledText>
+              <HapticPressable onPress={handleNewNote}>
+                <PlusEditIcon color={textColor} size={40} />
               </HapticPressable>
-            ) : (
-              <View style={styles.editToolbarRight} />
-            )}
-          </View>
-        ) : (
-          <>
-            <HapticPressable onPress={() => router.push("/settings")}>
-              <SettingsIcon color={textColor} size={40} />
-            </HapticPressable>
+            </>
+          )}
+        </View>
 
-            <HapticPressable onPress={() => router.replace("/")}>
-              <StyledText style={[styles.toolbarLabel, { color: textColor }]}>
-                NOTES
-              </StyledText>
-            </HapticPressable>
-
-            <HapticPressable onPress={handleNewNote}>
-              <PlusEditIcon color={textColor} size={40} />
-            </HapticPressable>
-          </>
-        )}
-      </View>
-
-      <Toast
-        message={toastMessage}
-        onHide={() => setToastVisible(false)}
-        visible={toastVisible}
-      />
-    </SafeAreaView>
+        <Toast
+          message={toastMessage}
+          onHide={() => setToastVisible(false)}
+          visible={toastVisible}
+        />
+      </SafeAreaView>
+    </SwipeBackContainer>
   );
 }
 
