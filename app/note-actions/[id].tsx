@@ -29,12 +29,12 @@ export default function NoteActionsScreen() {
 
   const handleCopyMarkdown = async () => {
     await setStringAsync(note?.body ?? "");
-    router.dismissTo(`/note/${id}?toast=Copied`);
+    router.dismissTo(`/note/${id}?toast=copied`);
   };
 
   const handleCopyPlainText = async () => {
     await setStringAsync(stripMarkdown(note?.body ?? ""));
-    router.dismissTo(`/note/${id}?toast=Copied`);
+    router.dismissTo(`/note/${id}?toast=copied`);
   };
 
   const handleMoveToFolder = () => {

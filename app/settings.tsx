@@ -35,7 +35,7 @@ export default function SettingsScreen() {
   const handleExportNotes = async () => {
     const text = notes.map((note) => note.body).join("\n\n");
     await setStringAsync(text);
-    setToastMessage("Copied");
+    setToastMessage("copied");
     setToastVisible(true);
   };
   const bg = invertColors ? "white" : "black";
