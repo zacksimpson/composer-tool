@@ -1,10 +1,10 @@
 # Composer
 
-
-
 A distraction-free Markdown notes tool for the Light Phone III.
 
 Composer is a minimal writing tool for people who want to capture thoughts, ideas, and notes – using Markdown that renders as you type and makes syntax disappear. Built to feel like a natural extension of the Light Phone experience.
+
+![Composer screenshots](assets/images/example.png)
 
 
 ---
@@ -33,9 +33,6 @@ Composer is a minimal writing tool for people who want to capture thoughts, idea
 ---
 
 ## Installing on Light Phone III
-
-> [!WARNING]
-> **This project is in early development and is not ready for production.** Expect rough edges and missing features. That said, feel free to download, use it, and give feedback on its direction!
 
 I highly recommend using Obtainium to ensure you receive future updates and new features automatically. Just add [the repo URL,](https://github.com/zacksimpson/composer-tool/) make sure you're able to install apps from unknown sources, and you're all set.
 
