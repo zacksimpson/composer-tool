@@ -2,6 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
 import {
+  Keyboard,
   KeyboardAvoidingView,
   StyleSheet,
   TextInput,
@@ -32,6 +33,7 @@ export default function FolderRenameScreen() {
       return;
     }
     renameFolder(id, name.trim());
+    Keyboard.dismiss();
     router.navigate("/folders");
   }, [canSave, id, name, renameFolder]);
 

@@ -1,6 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRef, useState } from "react";
 import {
+  Keyboard,
   KeyboardAvoidingView,
   StyleSheet,
   TextInput,
@@ -30,6 +31,7 @@ export default function FolderNewScreen() {
       return;
     }
     addFolder(name.trim());
+    Keyboard.dismiss();
     goBack();
   };
 
