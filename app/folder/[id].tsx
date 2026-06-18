@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   emptyText: {
-    fontSize: n(20),
+    fontSize: n(24),
   },
   toolbar: {
     flexDirection: "row",
