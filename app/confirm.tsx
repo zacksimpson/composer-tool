@@ -93,8 +93,11 @@ const styles = StyleSheet.create({
     paddingVertical: n(5),
   },
   headerTitle: {
+    flex: 1,
     fontSize: n(20),
     paddingTop: n(2),
+    textAlign: "center",
+    paddingHorizontal: n(8),
   },
   messageContainer: {
     flex: 1,
