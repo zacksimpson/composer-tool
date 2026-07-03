@@ -53,10 +53,9 @@ function RootLayout() {
 
   // Stamp theme colors once at mount time; subsequent theme changes go through setTheme
   const editorHtml = useRef(
-    MILKDOWN_EDITOR_HTML.replaceAll("COMPOSER_BG", bg).replaceAll(
-      "COMPOSER_TEXT",
-      textColor
-    )
+    MILKDOWN_EDITOR_HTML.replaceAll("COMPOSER_BG", bg)
+      .replaceAll("COMPOSER_TEXT", textColor)
+      .replaceAll("COMPOSER_ZOOM", n(1).toFixed(4))
   ).current;
 
   // Swipe-back gesture for the note screen — lives here (above the WebView in z-order)
