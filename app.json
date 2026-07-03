@@ -2,7 +2,7 @@
   "expo": {
     "name": "Composer",
     "slug": "composer-tool",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "scheme": "composer-tool",
     "icon": "./assets/images/icon.png",
@@ -15,12 +15,15 @@
       [
         "expo-font",
         {
-          "fonts": ["./assets/fonts/PublicSans-Regular.ttf"]
+          "fonts": [
+            "./assets/fonts/PublicSans-Regular.ttf"
+          ]
         }
       ],
       "./plugins/withAndroidConfigChanges",
       "./plugins/withAndroidTheme",
-      "./plugins/withDebugApplicationIdSuffix"
+      "./plugins/withDebugApplicationIdSuffix",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true
@@ -31,6 +34,9 @@
         "projectId": "4e59f350-105d-477e-be37-6d6dd44dc875"
       }
     },
-    "owner": "zacksimpson"
+    "owner": "zacksimpson",
+    "ios": {
+      "bundleIdentifier": "com.zacksimpson.composer"
+    }
   }
 }
