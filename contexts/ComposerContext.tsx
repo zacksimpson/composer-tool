@@ -103,6 +103,11 @@ const FORMAT_PREFIX: Record<NewNoteFormat, string> = {
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
+export interface ImportBackupResult {
+  importedFolders: number;
+  importedNotes: number;
+}
+
 interface ComposerContextType {
   addFolder: (name: string) => void;
   addNote: (folderId?: string | null) => string;
@@ -110,6 +115,7 @@ interface ComposerContextType {
   deleteNote: (id: string) => void;
   deleteNotes: (ids: string[]) => void;
   folders: Folder[];
+  importBackup: (backup: unknown) => ImportBackupResult;
   loaded: boolean;
   moveFolderDown: (id: string) => void;
   moveFolderUp: (id: string) => void;
@@ -348,6 +354,76 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     [folders, persistFolders]
   );
 
+  const importBackup = useCallback(
+    (backup: unknown): ImportBackupResult => {
+      if (!backup || typeof backup !== "object") {
+        throw new Error("Invalid backup file");
+      }
+      const data = backup as { folders?: unknown; notes?: unknown };
+      if (!Array.isArray(data.notes)) {
+        throw new Error("Invalid backup file");
+      }
+
+      const existingFolderIds = new Set(folders.map((f) => f.id));
+      const existingNoteIds = new Set(notes.map((n) => n.id));
+
+      const newFolders: Folder[] = (
+        Array.isArray(data.folders) ? data.folders : []
+      )
+        .filter(
+          (f): f is { id: string; name: string; order?: number } =>
+            !!f &&
+            typeof f === "object" &&
+            typeof (f as { id?: unknown }).id === "string" &&
+            typeof (f as { name?: unknown }).name === "string" &&
+            !existingFolderIds.has((f as { id: string }).id)
+        )
+        .map((f, i) => ({ id: f.id, name: f.name, order: folders.length + i }));
+
+      const validFolderIds = new Set([
+        ...existingFolderIds,
+        ...newFolders.map((f) => f.id),
+      ]);
+
+      const newNotes: Note[] = data.notes
+        .filter(
+          (n): n is { id: string; body: string; [key: string]: unknown } =>
+            !!n &&
+            typeof n === "object" &&
+            typeof (n as { id?: unknown }).id === "string" &&
+            typeof (n as { body?: unknown }).body === "string" &&
+            !existingNoteIds.has((n as { id: string }).id)
+        )
+        .map((n) => {
+          const createdAt = Date.parse(n.createdAt as string);
+          const updatedAt = Date.parse(n.updatedAt as string);
+          return {
+            id: n.id,
+            title: typeof n.title === "string" ? n.title : null,
+            body: n.body,
+            folderId: validFolderIds.has(n.folderId as string)
+              ? (n.folderId as string)
+              : null,
+            createdAt: Number.isNaN(createdAt) ? Date.now() : createdAt,
+            updatedAt: Number.isNaN(updatedAt) ? Date.now() : updatedAt,
+          };
+        });
+
+      if (newFolders.length > 0) {
+        persistFolders([...folders, ...newFolders]);
+      }
+      if (newNotes.length > 0) {
+        persistNotes([...newNotes, ...notes]);
+      }
+
+      return {
+        importedFolders: newFolders.length,
+        importedNotes: newNotes.length,
+      };
+    },
+    [folders, notes, persistFolders, persistNotes]
+  );
+
   const updateSettings = useCallback(
     async (updates: Partial<ComposerSettings>) => {
       const next = { ...settings, ...updates };
@@ -376,6 +452,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
         moveFolderUp,
         moveFolderDown,
         reorderFolders,
+        importBackup,
         updateSettings,
       }}
     >

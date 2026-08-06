@@ -85,7 +85,7 @@ export default function SettingsScreen() {
             style={styles.row}
           >
             <StyledText style={[styles.rowValue, { color: textColor }]}>
-              Export All Notes
+              Backup & Restore
             </StyledText>
           </HapticPressable>
 

@@ -15,15 +15,14 @@
       [
         "expo-font",
         {
-          "fonts": [
-            "./assets/fonts/PublicSans-Regular.ttf"
-          ]
+          "fonts": ["./assets/fonts/PublicSans-Regular.ttf"]
         }
       ],
       "./plugins/withAndroidConfigChanges",
       "./plugins/withAndroidTheme",
       "./plugins/withDebugApplicationIdSuffix",
-      "expo-sharing"
+      "expo-sharing",
+      "expo-document-picker"
     ],
     "experiments": {
       "typedRoutes": true

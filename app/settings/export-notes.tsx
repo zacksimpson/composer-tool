@@ -1,6 +1,10 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { setStringAsync } from "expo-clipboard";
-import { cacheDirectory, writeAsStringAsync } from "expo-file-system/legacy";
+import { getDocumentAsync } from "expo-document-picker";
+import {
+  cacheDirectory,
+  readAsStringAsync,
+  writeAsStringAsync,
+} from "expo-file-system/legacy";
 import { shareAsync } from "expo-sharing";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
@@ -16,16 +20,14 @@ import { n } from "@/utils/scaling";
 
 export default function ExportScreen() {
   const { invertColors } = useInvertColors();
-  const { notes, folders } = useComposer();
+  const { notes, folders, importBackup } = useComposer();
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const bg = invertColors ? "white" : "black";
   const textColor = invertColors ? "black" : "white";
 
-  const handleCopyAllAsText = async () => {
-    const text = notes.map((note) => note.body).join("\n\n");
-    await setStringAsync(text);
-    setToastMessage("copied");
+  const showToast = (message: string) => {
+    setToastMessage(message);
     setToastVisible(true);
   };
 
@@ -52,6 +54,25 @@ export default function ExportScreen() {
     await shareAsync(fileUri, { mimeType: "application/json" });
   };
 
+  const handleImportBackup = async () => {
+    const result = await getDocumentAsync({ type: "application/json" });
+    if (result.canceled || !result.assets?.[0]) {
+      return;
+    }
+    try {
+      const raw = await readAsStringAsync(result.assets[0].uri);
+      const parsed = JSON.parse(raw);
+      const { importedNotes } = importBackup(parsed);
+      showToast(
+        importedNotes > 0
+          ? `imported ${importedNotes} notes`
+          : "nothing new to import"
+      );
+    } catch {
+      showToast("invalid backup file");
+    }
+  };
+
   return (
     <SwipeBackContainer onSwipeBack={goBack}>
       <SafeAreaView
@@ -69,20 +90,20 @@ export default function ExportScreen() {
             </View>
           </HapticPressable>
           <StyledText style={[styles.headerTitle, { color: textColor }]}>
-            Export All Notes
+            Backup & Restore
           </StyledText>
           <View style={styles.headerBtn} />
         </View>
 
-        <HapticPressable onPress={handleCopyAllAsText} style={styles.optionRow}>
-          <StyledText style={[styles.optionText, { color: textColor }]}>
-            Copy All as Text
-          </StyledText>
-        </HapticPressable>
-
         <HapticPressable onPress={handleExportBackup} style={styles.optionRow}>
           <StyledText style={[styles.optionText, { color: textColor }]}>
             Export Backup
+          </StyledText>
+        </HapticPressable>
+
+        <HapticPressable onPress={handleImportBackup} style={styles.optionRow}>
+          <StyledText style={[styles.optionText, { color: textColor }]}>
+            Import Backup
           </StyledText>
         </HapticPressable>
       </SafeAreaView>
