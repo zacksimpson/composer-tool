@@ -366,6 +366,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
 
       const existingFolderIds = new Set(folders.map((f) => f.id));
       const existingNoteIds = new Set(notes.map((n) => n.id));
+      const maxOrder = folders.reduce((max, f) => Math.max(max, f.order), -1);
 
       const newFolders: Folder[] = (
         Array.isArray(data.folders) ? data.folders : []
@@ -378,7 +379,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
             typeof (f as { name?: unknown }).name === "string" &&
             !existingFolderIds.has((f as { id: string }).id)
         )
-        .map((f, i) => ({ id: f.id, name: f.name, order: folders.length + i }));
+        .map((f, i) => ({ id: f.id, name: f.name, order: maxOrder + 1 + i }));
 
       const validFolderIds = new Set([
         ...existingFolderIds,

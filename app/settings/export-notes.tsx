@@ -55,7 +55,7 @@ export default function ExportScreen() {
   };
 
   const handleImportBackup = async () => {
-    const result = await getDocumentAsync({ type: "application/json" });
+    const result = await getDocumentAsync({ type: "*/*" });
     if (result.canceled || !result.assets?.[0]) {
       return;
     }
