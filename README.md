@@ -2,7 +2,7 @@
 
 A distraction-free Markdown notes tool for the Light Phone III.
 
-Composer is a minimal writing tool for people who want to capture thoughts, ideas, and notes – using Markdown that renders as you type and makes syntax disappear. Built to feel like a natural extension of the Light Phone experience.
+Composer is a minimal writing tool for people who want to capture thoughts, ideas, and notes – using Markdown that renders as you type and makes syntax disappear. Built to feel like a natural extension of the Light Phone notes experience.
 
 ![Composer screenshots](assets/images/example.png)
 
@@ -11,7 +11,7 @@ Composer is a minimal writing tool for people who want to capture thoughts, idea
 
 ## Features
 
-* WYSIWYG Markdown editing – formatting renders in real time as you type
+* WYSIWYG Markdown editing: formatting renders in real time as you type
 * Copy note contents as either Markdown or plain text
 * Organize notes into folders, with bulk move and reorder support
 * Notes sorted by most recently edited, always at the top
@@ -22,13 +22,13 @@ Composer is a minimal writing tool for people who want to capture thoughts, idea
 
 ## Supported Markdown
 
-* **Bold** — `**text**`
-* *Italic* — `*text*`
-* Headings — `# H1`, `## H2`, `### H3`
-* Unordered lists — `- item`
-* Ordered lists — `1. item`
-* Inline code — `` `code` ``
-* Blockquotes — `> text`
+* **Bold**: `**text**`
+* *Italic*: `*text*`
+* Headings: `# H1`, `## H2`, `### H3`
+* Unordered lists: `- item`
+* Ordered lists: `1. item`
+* Inline code: `` `code` ``
+* Blockquotes: `> text`
 
 ---
 
